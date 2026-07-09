@@ -34,6 +34,7 @@ pub mod mesh;
 pub mod okx_bridge;
 pub mod server;
 pub mod settlement;
+pub mod settlement_backend;
 pub mod vault;
 pub mod x402;
 

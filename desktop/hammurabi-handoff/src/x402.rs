@@ -20,12 +20,13 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde_json::{json, Value};
 use thiserror::Error;
 use ulid::Ulid;
 
 use crate::mesh::MeshEventKind;
 use crate::server::HandoffState;
+use crate::settlement_backend::{SettlementBackend, SettlementError};
 
 /// The exact Phase-2 refusal line (Legible Autonomy narrative string — do
 /// not reword).
@@ -104,21 +105,47 @@ pub enum X402Error {
     IntentMismatch,
 }
 
-/// The payment gate: an in-memory treasury of settled, unredeemed receipts.
+/// The payment gate: an in-memory treasury of settled, unredeemed receipts,
+/// plus the [`SettlementBackend`] that produces them (mock by default; a live
+/// x402 facilitator under the `x402-live` feature).
 pub struct X402Gate {
     receipts: RwLock<HashMap<String, PaymentReceipt>>,
+    backend: SettlementBackend,
 }
 
 impl X402Gate {
     pub fn new() -> Self {
+        Self::with_backend(SettlementBackend::default())
+    }
+
+    /// Build a gate over a specific settlement backend.
+    pub fn with_backend(backend: SettlementBackend) -> Self {
         Self {
             receipts: RwLock::new(HashMap::new()),
+            backend,
         }
     }
 
     /// Quote the payment terms for an intent.
     pub fn terms_for(&self, intent_id: &str) -> PaymentTerms {
         PaymentTerms::quote(intent_id)
+    }
+
+    /// Settle the fee for `intent_id` through the configured backend and record
+    /// the resulting single-use receipt. `payment` is the client's x402
+    /// payload — required by the live facilitator backend, ignored by the mock.
+    pub async fn settle(
+        &self,
+        intent_id: &str,
+        payment: Option<&Value>,
+        now: i64,
+    ) -> Result<PaymentReceipt, SettlementError> {
+        let receipt = self.backend.settle(intent_id, payment, now).await?;
+        self.receipts
+            .write()
+            .unwrap_or_else(|e| e.into_inner())
+            .insert(receipt.receipt_id.clone(), receipt.clone());
+        Ok(receipt)
     }
 
     /// **Mock payment resolution.** Settles the 0.50 USDC fee locally and

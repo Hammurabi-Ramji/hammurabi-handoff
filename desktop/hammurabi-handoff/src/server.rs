@@ -102,25 +102,47 @@ async fn agent_announce(
 #[derive(Debug, Deserialize)]
 struct SettleRequest {
     intent_id: String,
+    /// The client's x402 `PaymentPayload`. Required by the live facilitator
+    /// backend; ignored by the default mock backend.
+    #[serde(default)]
+    payment: Option<serde_json::Value>,
 }
 
-/// Phase 2 (resolution) — mock-settle the 0.50 USDC fee for an intent.
+/// Phase 2 (resolution) — settle the 0.50 USDC fee for an intent through the
+/// gate's backend (mock by default; a live x402 facilitator under `x402-live`).
 async fn x402_settle(
     State(state): State<HandoffState>,
     Json(req): Json<SettleRequest>,
-) -> Json<PaymentReceipt> {
-    let receipt = state
+) -> Response {
+    match state
         .gate
-        .mock_settle(&req.intent_id, Utc::now().timestamp());
-    state.mesh.post(
-        GATE_HANDLE,
-        MeshEventKind::Payment,
-        &format!(
-            "x402 payment of 0.50 USDC settled for intent {} — receipt {}.",
-            receipt.intent_id, receipt.receipt_id
-        ),
-    );
-    Json(receipt)
+        .settle(&req.intent_id, req.payment.as_ref(), Utc::now().timestamp())
+        .await
+    {
+        Ok(receipt) => {
+            state.mesh.post(
+                GATE_HANDLE,
+                MeshEventKind::Payment,
+                &format!(
+                    "x402 payment of 0.50 USDC settled for intent {} — receipt {}.",
+                    receipt.intent_id, receipt.receipt_id
+                ),
+            );
+            (StatusCode::OK, Json(receipt)).into_response()
+        }
+        Err(e) => {
+            state.mesh.post(
+                GATE_HANDLE,
+                MeshEventKind::Restriction,
+                &format!("x402 settlement failed for intent {}: {e}", req.intent_id),
+            );
+            (
+                StatusCode::BAD_GATEWAY,
+                Json(json!({ "error": "settlement_failed", "detail": e.to_string() })),
+            )
+                .into_response()
+        }
+    }
 }
 
 /// Phases 3+4 — only reachable through the x402 guard, which injects the
