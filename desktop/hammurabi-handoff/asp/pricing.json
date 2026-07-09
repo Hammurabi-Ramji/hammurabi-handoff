@@ -1,0 +1,16 @@
+{
+  "$comment": "Standalone pricing configuration (draft checklist item). Mirrors asp/manifest.json `pricing` — keep in sync.",
+  "model": "x402",
+  "scheme": "exact",
+  "network": "arbitrum-stylus-local-stub",
+  "asset": "USDC",
+  "asset_decimals": 6,
+  "fees": {
+    "intent_announce": { "amount_micro": 0, "display": "free" },
+    "credential_minting": { "amount_micro": 500000, "display": "0.50 USDC" },
+    "payment_settlement": { "amount_micro": 0, "display": "free (the settlement IS the payment)" },
+    "audit_feed": { "amount_micro": 0, "display": "free" },
+    "credential_verification": { "amount_micro": 0, "display": "free (pure function; envelope is self-contained)" }
+  },
+  "settlement_resolution": "POST /x402/settle {\"intent_id\": ...} — local mock; live facilitator lands as opt-in feature (roadmap G-4)"
+}

@@ -1,0 +1,33 @@
+{
+  "$comment": "Standalone capabilities definition (draft checklist item). Mirrors asp/manifest.json `capabilities` — keep in sync.",
+  "capabilities": [
+    {
+      "id": "intent_announce",
+      "endpoint": "POST /agent/announce",
+      "description": "Post a structured agent intent to the RAMesh feed; empty body mints the demo ETH limit-order intent",
+      "input_schema": { "intent": "AgentIntent (optional)" },
+      "output_schema": { "intent": "AgentIntent" }
+    },
+    {
+      "id": "credential_minting",
+      "endpoint": "POST /execute",
+      "description": "x402-gated: burns a settled receipt, mints a chaos-tested ephemeral Ed25519 credential bound to the intent payload (RFC 8785 canonical, BLAKE3 digest, strict 60s TTL), returns the self-contained 1Shot settlement envelope",
+      "required_headers": ["x-intent-id", "x-402-receipt"],
+      "input_schema": { "intent": "AgentIntent" },
+      "output_schema": { "envelope": "OneShotEnvelope" }
+    },
+    {
+      "id": "payment_settlement",
+      "endpoint": "POST /x402/settle",
+      "description": "Settle the 0.50 USDC execution fee for an intent (LOCAL MOCK in this build)",
+      "input_schema": { "intent_id": "string" },
+      "output_schema": { "receipt": "PaymentReceipt (single-use, intent-bound)" }
+    },
+    {
+      "id": "audit_feed",
+      "endpoint": "GET /mesh/feed",
+      "description": "The RAMesh transcript — every gate, vault, and relay action as human-readable lines",
+      "output_schema": { "messages": "MeshMessage[]" }
+    }
+  ]
+}

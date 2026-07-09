@@ -1,0 +1,30 @@
+[package]
+name = "iedb-oka"
+version = "0.1.0"
+edition = "2021"
+authors = ["Hammurabi Coding Company, LLC"]
+license = "MIT"
+description = "IEDB ↔ OKX.AI adapter — HackQuest/Genesis integration boundary: ASP manifest modeling, OKX data-structure interop, and the bridge to the Hammurabi Handoff sovereign pipeline"
+
+[dependencies]
+# Workspace-pinned local-first stack (single source of truth in root Cargo.toml).
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+
+# External HackQuest / OKX API boundary. OFF by default so the crate's data
+# modeling compiles and tests in isolation with zero network stack — the
+# sovereignty posture used across the workspace (egress is opt-in, never
+# linked into the default build). Enable with `--features okx-live`.
+tokio = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true }
+
+[features]
+default = []
+# Pulls the async runtime + HTTP client for the live OKX.AI / HackQuest
+# endpoints. Kept opt-in: the default build has no network code at all.
+okx-live = ["dep:tokio", "dep:reqwest"]
+
+[dev-dependencies]
+tokio = { workspace = true }

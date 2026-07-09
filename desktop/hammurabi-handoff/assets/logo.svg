@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Hammurabi Handoff — stele logo (Image 6 spec: stone tablet, carved
+       handshake, code bracket; dark stone #2a2a3e, warm gold #c9a96e). -->
+  <defs>
+    <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#33334a"/>
+      <stop offset="0.5" stop-color="#2a2a3e"/>
+      <stop offset="1" stop-color="#222234"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dcbf87"/>
+      <stop offset="1" stop-color="#c9a96e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Stele: rectangle with rounded top -->
+  <path d="M116 468 L116 190 Q116 44 256 44 Q396 44 396 190 L396 468 Z"
+        fill="url(#stone)" stroke="#1a1a2a" stroke-width="6"/>
+  <!-- Subtle carved edge highlight -->
+  <path d="M132 462 L132 192 Q132 60 256 60 Q380 60 380 192 L380 462"
+        fill="none" stroke="#3d3d58" stroke-width="3"/>
+
+  <!-- Cuneiform-ish carved ticks (texture) -->
+  <g stroke="#3d3d58" stroke-width="5" stroke-linecap="round" opacity="0.8">
+    <path d="M170 110 l20 0"/><path d="M205 96 l0 20"/><path d="M320 100 l18 10"/>
+    <path d="M232 128 l16 0"/><path d="M290 124 l0 18"/><path d="M348 140 l16 0"/>
+    <path d="M168 152 l0 18"/><path d="M256 156 l18 8"/>
+  </g>
+
+  <!-- Handshake: two interlocking geometric hands -->
+  <g fill="none" stroke="url(#gold)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <!-- left arm/hand -->
+    <path d="M150 268 L216 268 L262 306"/>
+    <!-- right arm/hand -->
+    <path d="M362 244 L296 244 L250 282"/>
+    <!-- clasp: interlocked chevrons -->
+    <path d="M238 296 L258 276 L278 296"/>
+    <path d="M234 268 L254 288 L274 268"/>
+  </g>
+
+  <!-- Code bracket carved below: < /> -->
+  <g fill="none" stroke="#c9a96e" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M212 356 L184 384 L212 412"/>
+    <path d="M300 356 L328 384 L300 412"/>
+    <path d="M268 352 L244 416"/>
+  </g>
+</svg>

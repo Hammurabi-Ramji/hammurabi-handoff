@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Hammurabi Handoff — RAMesh</title>
+<style>
+  :root {
+    --bg: #0b0e14; --panel: #11151f; --line: #1f2633;
+    --fg: #c9d4e3; --dim: #5c6b82; --accent: #7aa2f7;
+    --intent: #9ece6a; --restriction: #f7768e; --payment: #e0af68;
+    --credential: #bb9af7; --settlement: #7dcfff; --info: #5c6b82;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 13px/1.55 "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+    display: flex; flex-direction: column; height: 100vh;
+  }
+  header {
+    padding: 10px 16px; background: var(--panel);
+    border-bottom: 1px solid var(--line); display: flex; gap: 12px;
+    align-items: baseline;
+  }
+  header h1 { font-size: 14px; margin: 0; color: var(--accent); font-weight: 600; }
+  header .channel { color: var(--dim); }
+  #feed {
+    flex: 1; overflow-y: auto; padding: 12px 16px; white-space: pre-wrap;
+  }
+  .msg { display: flex; gap: 8px; padding: 1px 0; }
+  .msg .seq { color: var(--dim); min-width: 46px; text-align: right; }
+  .msg .sender { min-width: 150px; }
+  .k-intent .sender { color: var(--intent); }
+  .k-restriction .sender { color: var(--restriction); }
+  .k-payment .sender { color: var(--payment); }
+  .k-credential .sender { color: var(--credential); }
+  .k-settlement .sender { color: var(--settlement); }
+  .k-info .sender { color: var(--info); }
+  .k-restriction .body { color: var(--restriction); }
+  .k-credential .body { color: var(--credential); }
+  footer {
+    padding: 10px 16px; background: var(--panel);
+    border-top: 1px solid var(--line); display: flex; gap: 8px;
+  }
+  button {
+    background: transparent; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 3px;
+    padding: 6px 12px; font: inherit; cursor: pointer;
+  }
+  button:hover { background: var(--accent); color: var(--bg); }
+  button:disabled { opacity: 0.4; cursor: default; }
+  #status { margin-left: auto; color: var(--dim); align-self: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Hammurabi Handoff</h1>
+  <span class="channel">RAMesh · #handoff-ops · local-first · zero-telemetry</span>
+</header>
+<div id="feed"></div>
+<footer>
+  <button id="announce">1 · Announce opportunity</button>
+  <button id="execute" disabled>2 · Request execution</button>
+  <button id="settle" disabled>3 · Settle x402 (0.50 USDC)</button>
+  <button id="retry" disabled>4 · Execute with receipt</button>
+  <span id="status">idle</span>
+</footer>
+<script>
+  // RAMesh frontend logic — every button is one step of the Legible
+  // Autonomy loop. All calls go through Tauri IPC; the backend routes them
+  // through the single x402-guarded Axum router.
+  const invoke = window.__TAURI__.core.invoke;
+  const listen = window.__TAURI__.event.listen;
+
+  const feedEl = document.getElementById("feed");
+  const statusEl = document.getElementById("status");
+  const btn = (id) => document.getElementById(id);
+
+  let intent = null;      // Phase 1 result
+  let receiptId = null;   // Phase 2 settlement result
+  const seen = new Set(); // seq dedupe — snapshot and live stream overlap
+
+  // All message fields go through textContent — sender/body are
+  // caller-influenced strings and must never touch innerHTML.
+  function renderLine(m) {
+    if (seen.has(m.seq)) return;
+    seen.add(m.seq);
+    const div = document.createElement("div");
+    div.className = "msg k-" + m.kind;
+    const span = (cls, text) => {
+      const el = document.createElement("span");
+      el.className = cls;
+      el.textContent = text;
+      div.appendChild(el);
+    };
+    span("seq", "[" + String(m.seq).padStart(4, " ") + "]");
+    span("sender", "<" + m.sender + ">");
+    span("body", m.body);
+    feedEl.appendChild(div);
+    feedEl.scrollTop = feedEl.scrollHeight;
+  }
+
+  async function boot() {
+    // Subscribe BEFORE snapshotting so nothing posted in between is lost;
+    // the seq dedupe absorbs the overlap.
+    await listen("ramesh://message", (e) => renderLine(e.payload));
+    (await invoke("mesh_feed")).forEach(renderLine);
+  }
+
+  btn("announce").onclick = async () => {
+    const r = await invoke("agent_announce");
+    intent = r.body;
+    statusEl.textContent = "intent " + intent.intent_id;
+    btn("execute").disabled = false;
+  };
+
+  btn("execute").onclick = async () => {
+    const r = await invoke("request_execution", { intent, receiptId: null });
+    if (r.status === 402) {
+      statusEl.textContent = "402 — payment required";
+      btn("settle").disabled = false;
+    } else {
+      statusEl.textContent = "unexpected " + r.status;
+    }
+  };
+
+  btn("settle").onclick = async () => {
+    const r = await invoke("x402_settle", { intentId: intent.intent_id });
+    receiptId = r.body.receipt_id;
+    statusEl.textContent = "receipt " + receiptId;
+    btn("retry").disabled = false;
+  };
+
+  btn("retry").onclick = async () => {
+    const r = await invoke("request_execution", { intent, receiptId });
+    if (r.status === 200) {
+      statusEl.textContent =
+        "settled — envelope " + r.body.idempotency_key + " (TTL 60s)";
+    } else {
+      statusEl.textContent = "refused: " + r.status;
+    }
+  };
+
+  boot();
+</script>
+</body>
+</html>

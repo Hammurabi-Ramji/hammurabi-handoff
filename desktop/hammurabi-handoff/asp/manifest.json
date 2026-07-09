@@ -1,0 +1,71 @@
+{
+  "manifest_version": "1.0",
+  "name": "Hammurabi Handoff — JIT Vault",
+  "description": "Just-in-time credential vault for AI agents: per-action, payload-bound, 60-second Ed25519 credentials behind an x402 payment gate, with a human-readable audit feed (RAMesh) for every agent action.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Hammurabi Coding Company, LLC",
+    "url": "https://github.com/Hammurabi-Ramji/hammurabi-handoff"
+  },
+  "capabilities": {
+    "intent_announce": {
+      "description": "Post a structured agent intent to the RAMesh feed",
+      "endpoint": "POST /agent/announce",
+      "input": { "intent": "AgentIntent (optional; empty body mints the demo intent)" },
+      "output": { "intent": "AgentIntent" },
+      "fee": "free"
+    },
+    "credential_minting": {
+      "description": "x402-gated execution: burns a settled receipt, mints a chaos-tested ephemeral Ed25519 credential bound to the intent payload, returns the gasless settlement envelope",
+      "endpoint": "POST /execute",
+      "headers": ["x-intent-id", "x-402-receipt"],
+      "input": { "intent": "AgentIntent" },
+      "output": {
+        "envelope": "OneShotEnvelope",
+        "signer_public_key_hex": "string (32-byte hex)",
+        "signature_hex": "string (64-byte hex)",
+        "issued_at": "integer (unix seconds)",
+        "expires_at": "integer (issued_at + 60, strict)"
+      },
+      "fee": "0.50 USDC via x402"
+    },
+    "payment_settlement": {
+      "description": "x402 settlement for an intent (LOCAL MOCK in this build — live facilitator is an opt-in feature)",
+      "endpoint": "POST /x402/settle",
+      "input": { "intent_id": "string" },
+      "output": { "receipt": "PaymentReceipt (single-use, intent-bound)" },
+      "fee": "free (the settlement IS the 0.50 USDC payment)"
+    },
+    "audit_feed": {
+      "description": "The RAMesh transcript — every gate, vault, and relay action as human-readable lines",
+      "endpoint": "GET /mesh/feed",
+      "output": { "messages": "MeshMessage[]" },
+      "fee": "free"
+    }
+  },
+  "pricing": {
+    "model": "x402",
+    "scheme": "exact",
+    "asset": "USDC",
+    "credential_mint_fee_micro": 500000,
+    "credential_mint_fee_display": "0.50 USDC",
+    "credential_verify_fee": "free (pure function; envelope is self-contained)"
+  },
+  "integrations": {
+    "okx_edge": "live — OKX marketplace invocations are dispatched through iedb-oka::interop into the same in-process Handoff router as the UI (okx_bridge), so every OKX request passes the identical x402 gate; single enforcement point, no bypass",
+    "x402": "middleware live; settlement mocked locally by default",
+    "oneshot": "envelope formatting live; broadcast stubbed (local:// endpoint)",
+    "stylus": "Rust reference verifier live (settlement::verify_handoff — byte-level, no_std-portable, mirrors the on-chain contract); envelope self-verifies off the wire form. On-chain deployment is roadmap G-1 (not claimed as deployed)."
+  },
+  "sovereignty": {
+    "binding": "127.0.0.1 only",
+    "telemetry": "none",
+    "key_persistence": "none — ephemeral per-mint, seed zeroized in-frame",
+    "clock_discipline": "caller-supplied time on all cryptographic paths"
+  },
+  "display": {
+    "logo": "icons/icon.ico",
+    "primary_color": "#0b0e14",
+    "accent_color": "#c9a96e"
+  }
+}

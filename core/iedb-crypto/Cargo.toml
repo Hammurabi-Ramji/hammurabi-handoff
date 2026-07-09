@@ -1,0 +1,35 @@
+[package]
+name = "iedb-crypto"
+version = "0.1.0"
+edition = "2021"
+authors = ["Hammurabi Coding Company, LLC"]
+license = "MIT"
+description = "Cryptographic bedrock — Ed25519 signatures, RFC 8785 JCS canonicalization, BLAKE3/SHA-256 hashing, ChaCha20-Poly1305 keystore, and Merkle accumulator"
+
+[features]
+default = ["std", "ed25519"]
+std = []
+ed25519 = []
+
+[dependencies]
+# Workspace-standard primitives
+blake3.workspace = true
+ed25519-dalek.workspace = true
+rand.workspace = true
+sha2.workspace = true
+hex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+zeroize.workspace = true
+argon2.workspace = true
+chacha20poly1305.workspace = true
+curve25519-dalek.workspace = true
+crypto_box.workspace = true          # X25519 + XChaCha20-Poly1305 sealed boxes (aead::seal/open)
+thiserror.workspace = true
+tracing.workspace = true
+anyhow.workspace = true
+# axum/tower/tower-http retired in Phase 2: the HTTP 402 handshake gateway moved
+# off the bedrock onto iedb-transport's ipc_bus auth gate. The bedrock is now a
+# pure cryptographic library — no web server in its dependency graph.
+
+[dev-dependencies]

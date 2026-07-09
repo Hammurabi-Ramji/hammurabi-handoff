@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" font-family="Consolas, 'Cascadia Mono', monospace">
+  <!-- Hammurabi Handoff — system architecture (Image 1 spec, corrected to
+       the as-built topology: RAMesh in-process feed, one Axum gate,
+       loopback-only; no ircd). -->
+  <rect width="1200" height="800" fill="#0f0f23"/>
+  <text x="600" y="46" fill="#c9d4e3" font-size="26" text-anchor="middle" font-weight="bold">Hammurabi Handoff — JIT Vault · System Architecture</text>
+  <text x="600" y="74" fill="#5c6b82" font-size="15" text-anchor="middle">local-first · zero-telemetry · one enforcement point</text>
+
+  <!-- Machine boundary -->
+  <rect x="60" y="100" width="1080" height="520" rx="14" fill="none" stroke="#2a3350" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="84" y="128" fill="#5c6b82" font-size="14">user's machine — one Tauri process</text>
+
+  <!-- Operator / WebView -->
+  <rect x="100" y="170" width="230" height="110" rx="10" fill="#11151f" stroke="#7aa2f7" stroke-width="2"/>
+  <text x="215" y="205" fill="#7aa2f7" font-size="17" text-anchor="middle" font-weight="bold">WebView (operator)</text>
+  <text x="215" y="230" fill="#c9d4e3" font-size="13" text-anchor="middle">ui/dist — 4-step loop</text>
+  <text x="215" y="252" fill="#5c6b82" font-size="12" text-anchor="middle">invoke() · ramesh://message</text>
+
+  <!-- RAMesh -->
+  <rect x="430" y="150" width="340" height="150" rx="10" fill="#11151f" stroke="#9ece6a" stroke-width="2"/>
+  <text x="600" y="182" fill="#9ece6a" font-size="18" text-anchor="middle" font-weight="bold">RAMesh — #handoff-ops</text>
+  <text x="600" y="207" fill="#c9d4e3" font-size="13" text-anchor="middle">in-process IRC-semantics feed</text>
+  <text x="600" y="232" fill="#9ece6a" font-size="13" text-anchor="middle">&lt;agent/scout-1&gt; · &lt;gate/x402&gt;</text>
+  <text x="600" y="254" fill="#bb9af7" font-size="13" text-anchor="middle">&lt;vault/handshake&gt; · &lt;relay/1shot&gt;</text>
+  <text x="600" y="282" fill="#5c6b82" font-size="12" text-anchor="middle">append-only log + live broadcast</text>
+
+  <!-- Agents -->
+  <rect x="870" y="170" width="230" height="110" rx="10" fill="#11151f" stroke="#e0af68" stroke-width="2"/>
+  <text x="985" y="205" fill="#e0af68" font-size="17" text-anchor="middle" font-weight="bold">Local agents</text>
+  <text x="985" y="230" fill="#c9d4e3" font-size="13" text-anchor="middle">agent/scout-1 (mock)</text>
+  <text x="985" y="252" fill="#5c6b82" font-size="12" text-anchor="middle">headless · 127.0.0.1:3402</text>
+
+  <!-- Router / gate -->
+  <rect x="240" y="360" width="720" height="120" rx="10" fill="#11151f" stroke="#f7768e" stroke-width="2"/>
+  <text x="600" y="392" fill="#f7768e" font-size="18" text-anchor="middle" font-weight="bold">ONE Axum router — x402 gate on /execute</text>
+  <text x="600" y="418" fill="#c9d4e3" font-size="13" text-anchor="middle">/agent/announce · /x402/settle (0.50 USDC, mock) · /execute · /mesh/feed</text>
+  <text x="600" y="442" fill="#5c6b82" font-size="12" text-anchor="middle">402 + terms when unpaid · receipts burn on redemption · intent-bound</text>
+  <text x="600" y="464" fill="#5c6b82" font-size="12" text-anchor="middle">UI dispatches via in-process tower::oneshot — no path around the gate</text>
+
+  <!-- Vault -->
+  <rect x="240" y="510" width="340" height="90" rx="10" fill="#11151f" stroke="#bb9af7" stroke-width="2"/>
+  <text x="410" y="540" fill="#bb9af7" font-size="16" text-anchor="middle" font-weight="bold">Hammurabi Handshake vault</text>
+  <text x="410" y="562" fill="#c9d4e3" font-size="12" text-anchor="middle">JIT Ed25519 · RFC 8785 payload-bound · 60s TTL</text>
+  <text x="410" y="582" fill="#5c6b82" font-size="12" text-anchor="middle">chaos-tested per mint · seed zeroized in-frame</text>
+
+  <!-- Envelope -->
+  <rect x="620" y="510" width="340" height="90" rx="10" fill="#11151f" stroke="#7dcfff" stroke-width="2"/>
+  <text x="790" y="540" fill="#7dcfff" font-size="16" text-anchor="middle" font-weight="bold">1Shot envelope (stub)</text>
+  <text x="790" y="562" fill="#c9d4e3" font-size="12" text-anchor="middle">self-contained · idempotency = credential id</text>
+  <text x="790" y="582" fill="#5c6b82" font-size="12" text-anchor="middle">local:// endpoint — no network I/O</text>
+
+  <!-- Future settlement -->
+  <rect x="380" y="670" width="440" height="90" rx="10" fill="#11151f" stroke="#414868" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="600" y="700" fill="#8a93a8" font-size="15" text-anchor="middle" font-weight="bold">future (opt-in): 1Shot relay → Arbitrum Stylus</text>
+  <text x="600" y="724" fill="#5c6b82" font-size="12" text-anchor="middle">verify_handoff re-runs the exact Rust verification on-chain</text>
+  <text x="600" y="744" fill="#5c6b82" font-size="12" text-anchor="middle">gasless-sponsored · chain id 42161 · roadmap G-1 / G-5</text>
+
+  <!-- Arrows -->
+  <g stroke="#5c6b82" stroke-width="2" fill="#5c6b82">
+    <path d="M330 225 L424 225" marker-end="url(#a)"/>
+    <path d="M870 225 L776 225" marker-end="url(#a)"/>
+    <path d="M215 280 L215 330 L360 330 L360 360" fill="none" marker-end="url(#a)"/>
+    <path d="M985 280 L985 330 L840 330 L840 360" fill="none" marker-end="url(#a)"/>
+    <path d="M410 480 L410 510" marker-end="url(#a)"/>
+    <path d="M580 555 L620 555" marker-end="url(#a)"/>
+    <path d="M790 600 L790 636 L600 636 L600 670" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+    <path d="M600 300 L600 360" marker-end="url(#a)" opacity="0.6"/>
+  </g>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0 0 L10 4 L0 8 Z" fill="#5c6b82"/>
+    </marker>
+  </defs>
+</svg>

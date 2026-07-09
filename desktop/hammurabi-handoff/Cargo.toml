@@ -1,0 +1,58 @@
+[package]
+name = "hammurabi-handoff"
+version = "0.1.0"
+edition = "2021"
+authors = ["Hammurabi Coding Company, LLC"]
+license = "MIT"
+description = "Hammurabi Handoff — unified Agent Service Provider: RAMesh legible agent mesh (Tauri) + Hammurabi Handshake JIT credential vault (x402-gated ephemeral Ed25519) + 1Shot/Stylus settlement formatting (stubbed)"
+
+[features]
+default = []
+# Tauri desktop shell. OFF by default so the ASP core (mesh, x402 gate, JIT
+# vault, settlement formatter) compiles and tests in isolation during the
+# parallel workspace build — same posture as `ramgenie-ide`. The shell ships
+# a hand-written static `ui/dist` (no npm build step required), so unlike
+# ramgenie-ide this feature is compilable as-is.
+tauri-app = [
+    "dep:tauri",
+    "dep:tauri-build",
+    "dep:tauri-plugin-single-instance",
+    "dep:tracing-subscriber",
+]
+
+[[bin]]
+name = "hammurabi-handoff"
+path = "src/main.rs"
+required-features = ["tauri-app"]
+
+[dependencies]
+# Sovereign crypto pillar — Ed25519 identity (zeroized seed), RFC 8785
+# canonical-JSON payload signing (`jcs`), BLAKE3 digests. The vault never
+# touches `ed25519-dalek` directly.
+iedb-crypto = { path = "../../core/iedb-crypto" }
+# OKX marketplace edge. Handoff depends on oka (not the reverse) so the OKX
+# schema surface stays contained in one direction — `okx_bridge` is the only
+# seam. Default features only (no `okx-live` HTTP): the bridge drives the
+# in-process router, never the network.
+iedb-oka = { path = "../../tooling/iedb-oka" }
+
+# Workspace
+tokio.workspace = true
+axum.workspace = true
+tower.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+ulid.workspace = true
+hex.workspace = true
+rand.workspace = true
+
+# Desktop shell (only under `tauri-app`)
+tauri = { version = "2", optional = true, features = [] }
+tauri-plugin-single-instance = { version = "2", optional = true }
+tracing-subscriber = { workspace = true, optional = true }
+
+[build-dependencies]
+tauri-build = { version = "2", optional = true, features = [] }
