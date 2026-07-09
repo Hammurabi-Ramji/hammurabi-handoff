@@ -166,7 +166,9 @@ impl TokenLedger {
         let root = chained_root(event_cids);
         let token_id = derive_token_id(batch_id, &root);
         if self.tokens.contains_key(&token_id) {
-            return Err(CryptoError::Token(format!("token already minted: {token_id}")));
+            return Err(CryptoError::Token(format!(
+                "token already minted: {token_id}"
+            )));
         }
         let event_count = event_cids.len() as i64;
         let token = GoodToken {
@@ -195,7 +197,12 @@ impl TokenLedger {
 
     /// Enforce a status transition, rejecting moves not allowed from the
     /// token's current state.
-    fn transition(&mut self, token_id: &str, allowed_from: &[TokenStatus], to: TokenStatus) -> CryptoResult<()> {
+    fn transition(
+        &mut self,
+        token_id: &str,
+        allowed_from: &[TokenStatus],
+        to: TokenStatus,
+    ) -> CryptoResult<()> {
         let token = self
             .tokens
             .get_mut(token_id)
@@ -222,14 +229,23 @@ impl TokenLedger {
 
     /// Burn a token, removing it from circulation (`Minted`/`Active → Burned`).
     pub fn burn(&mut self, token_id: &str, _reason: &str) -> CryptoResult<()> {
-        self.transition(token_id, &[TokenStatus::Minted, TokenStatus::Active], TokenStatus::Burned)
+        self.transition(
+            token_id,
+            &[TokenStatus::Minted, TokenStatus::Active],
+            TokenStatus::Burned,
+        )
     }
 
     /// Administratively revoke a token from any non-revoked state.
     pub fn revoke(&mut self, token_id: &str, _reason: &str) -> CryptoResult<()> {
         self.transition(
             token_id,
-            &[TokenStatus::Minted, TokenStatus::Active, TokenStatus::Spent, TokenStatus::Burned],
+            &[
+                TokenStatus::Minted,
+                TokenStatus::Active,
+                TokenStatus::Spent,
+                TokenStatus::Burned,
+            ],
             TokenStatus::Revoked,
         )
     }
@@ -322,7 +338,9 @@ mod tests {
     fn double_mint_same_batch_is_rejected() -> CryptoResult<()> {
         let mut l = TokenLedger::new();
         l.mint(1, &cids(2), T0, T1, T0, serde_json::Value::Null)?;
-        assert!(l.mint(1, &cids(2), T0, T1, T0, serde_json::Value::Null).is_err());
+        assert!(l
+            .mint(1, &cids(2), T0, T1, T0, serde_json::Value::Null)
+            .is_err());
         Ok(())
     }
 
@@ -348,12 +366,16 @@ mod tests {
     #[test]
     fn burn_and_revoke() -> CryptoResult<()> {
         let mut l = TokenLedger::new();
-        let id = l.mint(1, &cids(1), T0, T1, T0, serde_json::Value::Null)?.token_id;
+        let id = l
+            .mint(1, &cids(1), T0, T1, T0, serde_json::Value::Null)?
+            .token_id;
         l.burn(&id, "test burn")?;
         assert_eq!(l.get(&id)?.status, TokenStatus::Burned);
         assert_eq!(l.count_by_status(TokenStatus::Burned), 1);
 
-        let id2 = l.mint(2, &cids(1), T0, T1, T0, serde_json::Value::Null)?.token_id;
+        let id2 = l
+            .mint(2, &cids(1), T0, T1, T0, serde_json::Value::Null)?
+            .token_id;
         l.revoke(&id2, "admin")?;
         assert_eq!(l.get(&id2)?.status, TokenStatus::Revoked);
         // Revoked is terminal — no further transitions.

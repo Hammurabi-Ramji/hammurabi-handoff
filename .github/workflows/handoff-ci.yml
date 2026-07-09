@@ -1,0 +1,50 @@
+name: handoff-ci
+
+# Gates the submission crates (iedb-crypto, iedb-oka, hammurabi-handoff) on
+# format, lint, build, and test. Runs on pull requests targeting main and on
+# pushes to main (so the README badge reflects the default branch).
+#
+# Default features only, on purpose: `tauri-app` (WebKit/GTK system libs) and
+# `okx-live` (network egress) are opt-in and stay off here, so the ASP core
+# builds and tests on a bare runner with no apt installs and no network.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: handoff-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: fmt · clippy · build · test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust (stable + rustfmt + clippy)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry, index, and target
+        uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy (deny warnings)
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Build
+        run: cargo build --workspace --all-targets
+
+      - name: Test
+        run: cargo test --workspace

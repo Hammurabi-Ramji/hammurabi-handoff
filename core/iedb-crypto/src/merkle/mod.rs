@@ -118,7 +118,9 @@ impl MerkleForest {
         let start = index - local_idx;
 
         // Build all intermediate levels (unwrap-free: track `level` directly).
-        let mut level: Vec<[u8; 32]> = (start..start + mountain_size).map(|i| self.leaves[i]).collect();
+        let mut level: Vec<[u8; 32]> = (start..start + mountain_size)
+            .map(|i| self.leaves[i])
+            .collect();
         let mut levels: Vec<Vec<[u8; 32]>> = vec![level.clone()];
         while level.len() > 1 {
             let mut next = Vec::with_capacity(level.len().div_ceil(2));
@@ -297,7 +299,9 @@ fn decode_hash_array(items: &[serde_json::Value]) -> Result<Vec<[u8; 32]>, MmrEr
     for item in items {
         let s = item.as_str().ok_or(MmrError::Empty)?;
         let bytes = hex::decode(s).map_err(|_| MmrError::ProofVerificationFailed)?;
-        let arr: [u8; 32] = bytes.try_into().map_err(|_| MmrError::ProofVerificationFailed)?;
+        let arr: [u8; 32] = bytes
+            .try_into()
+            .map_err(|_| MmrError::ProofVerificationFailed)?;
         out.push(arr);
     }
     Ok(out)

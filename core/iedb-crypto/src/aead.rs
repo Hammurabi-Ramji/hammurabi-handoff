@@ -37,9 +37,14 @@ pub fn seal(
     receiver_public: &[u8; 32],
     plaintext: &[u8],
 ) -> CryptoResult<Vec<u8>> {
-    let boxed = ChaChaBox::new(&PublicKey::from(*receiver_public), &SecretKey::from(*sender_secret));
+    let boxed = ChaChaBox::new(
+        &PublicKey::from(*receiver_public),
+        &SecretKey::from(*sender_secret),
+    );
     let nonce = ChaChaBox::generate_nonce(&mut OsRng);
-    let ciphertext = boxed.encrypt(&nonce, plaintext).map_err(|_| CryptoError::SealFailed)?;
+    let ciphertext = boxed
+        .encrypt(&nonce, plaintext)
+        .map_err(|_| CryptoError::SealFailed)?;
 
     let mut out = Vec::with_capacity(NONCE_LEN + ciphertext.len());
     out.extend_from_slice(nonce.as_slice());
@@ -60,7 +65,10 @@ pub fn open(
         return Err(CryptoError::SealFailed);
     }
     let (nonce_bytes, ciphertext) = sealed.split_at(NONCE_LEN);
-    let boxed = ChaChaBox::new(&PublicKey::from(*sender_public), &SecretKey::from(*receiver_secret));
+    let boxed = ChaChaBox::new(
+        &PublicKey::from(*sender_public),
+        &SecretKey::from(*receiver_secret),
+    );
     boxed
         .decrypt(Nonce::from_slice(nonce_bytes), ciphertext)
         .map_err(|_| CryptoError::SealFailed)
@@ -79,7 +87,11 @@ mod tests {
         let bob_x_pub = Identity::x25519_public_from_address(&bob.public_key())?;
         let alice_x_pub = Identity::x25519_public_from_address(&alice.public_key())?;
 
-        let sealed = seal(&alice.x25519_secret_bytes(), &bob_x_pub, b"sovereign secret")?;
+        let sealed = seal(
+            &alice.x25519_secret_bytes(),
+            &bob_x_pub,
+            b"sovereign secret",
+        )?;
         // The ciphertext must not contain the plaintext.
         assert!(!sealed.windows(16).any(|w| w == b"sovereign secret"));
 
