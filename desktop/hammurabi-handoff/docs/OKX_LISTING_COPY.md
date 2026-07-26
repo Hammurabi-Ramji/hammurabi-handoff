@@ -98,14 +98,14 @@ https://github.com/Hammurabi-Ramji/hammurabi-handoff
 ```
 cargo run -p hammurabi-handoff --features tauri-app
 ```
-Tests: `cargo test` → hammurabi-handoff 23/23 · iedb-crypto 38/38 · iedb-oka 7/7
+Tests: `cargo test` → hammurabi-handoff 27/27 · iedb-crypto 38/38 · iedb-oka 7/7
 
 ## Field: Team
 Hammurabi Coding Company, LLC
 
 ## Field: Tracks applied for
 - **Revenue Rocket ($20K)** — headline; x402 metering as the product engine
-- **Best Product ($20K)** — working E2E pipeline, 23 tests, one-command run
+- **Best Product ($20K)** — working E2E pipeline, 27 tests, one-command run
 - **Creative Genius ($20K)** — compositional novelty + per-mint self-attack
 - **Software Utility ($7.5K)** — drop-in credential layer; integration is an
   HTTP call, not an SDK
