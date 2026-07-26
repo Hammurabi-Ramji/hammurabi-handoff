@@ -117,11 +117,38 @@ video consistent with the code).
   spec lives outside this repo and I don't have it in front of me to quote
   a number I'd just be guessing at.
 
-### Where everything goes
+### Where everything goes — this part is a pure drop-in, no doc edits needed
 
-- Screenshots → `desktop/hammurabi-handoff/assets/screenshots/` (new folder), referenced from the OKX gallery upload and `SOCIAL_POSTS.md` Post 1's "live feed screenshot" media slot.
-- Video file + thumbnail → same `assets/` tree or wherever you stage the OKX upload from; link it back into `SOCIAL_POSTS.md` Post 2's "demo MP4 + thumbnail" slot once recorded.
-- After recording, this file's job is done — nothing here needs to ship in the final submission itself, it's a production checklist, not user-facing copy.
+The folders and every reference to these files already exist in the repo,
+wired to these exact paths. Save under these names and you're done — README,
+the OKX listing copy source, and the social posts already point here:
+
+```
+desktop/hammurabi-handoff/assets/screenshots/
+  01-idle.png
+  02-announce.png
+  03-restricted.png
+  04-minted.png
+  05-replay-bounced.png
+
+desktop/hammurabi-handoff/assets/video/
+  demo.mp4
+  thumbnail.png
+```
+
+- `README.md` — the "Screenshots" and "Demo video" sections already embed
+  these exact paths; the images/thumbnail render automatically once the
+  files land, nothing else to edit.
+- `SOCIAL_POSTS.md` — each post's `Media:` line already names the specific
+  file(s) it needs from the lists above.
+- OKX gallery upload — pull straight from `assets/screenshots/` and
+  `assets/video/` when filling out the portal form from
+  `OKX_LISTING_COPY.md`.
+
+If Cursor's capture tool wants to name things differently, either rename its
+output to match the list above, or update the handful of paths in `README.md`
+and `SOCIAL_POSTS.md` to match — but matching the convention here means a
+literal file copy is the entire remaining step.
 
 ---
 

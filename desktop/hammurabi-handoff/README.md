@@ -119,6 +119,30 @@ curl -s -X POST http://127.0.0.1:3402/execute \
 # → 1Shot envelope: verifiable signature, 60s validity window, idempotency key
 ```
 
+## Screenshots
+
+<!-- Drop-in slot: save the 5 captures from docs/VIDEO_PREP.md Part A into
+     assets/screenshots/ using the filenames below — nothing else to edit,
+     these embeds pick them up automatically. -->
+
+| Idle | Announce | 402 restricted |
+|------|----------|-----------------|
+| ![Idle shell](assets/screenshots/01-idle.png) | ![Intent announced](assets/screenshots/02-announce.png) | ![x402 restriction](assets/screenshots/03-restricted.png) |
+
+| Credential minted | Replay bounced |
+|---------------------|------------------|
+| ![Credential minted](assets/screenshots/04-minted.png) | ![Burned receipt replay bounced](assets/screenshots/05-replay-bounced.png) |
+
+## Demo video
+
+<!-- Drop-in slot: save the recording + thumbnail from docs/VIDEO_PREP.md
+     Part B as assets/video/demo.mp4 and assets/video/thumbnail.png. -->
+
+[![Watch the 90-second demo](assets/video/thumbnail.png)](assets/video/demo.mp4)
+
+*90 seconds: announce → 402 refusal → x402 settle → credential mint → replay
+bounce. Script: [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).*
+
 ## Continuous integration
 
 `.github/workflows/handoff-ci.yml` (badge above, live on `main`) gates this

@@ -2,7 +2,10 @@
 
 Numbers corrected from the draft: 60-second TTL (not 30), 0.50 USDC x402
 fee, "staged for gasless Stylus broadcast" (no on-chain confirmation claims
-while settlement is stubbed). Media slots reference `assets/`.
+while settlement is stubbed). Media slots below are drop-in: they name the
+exact file each post needs from `assets/screenshots/` or `assets/video/`
+(see `docs/VIDEO_PREP.md`) — once those files exist, attach by filename,
+nothing else to figure out.
 
 ## Post 1 — Introduction (Day 1)
 ```
@@ -13,7 +16,7 @@ Credentials that die after one use — 60 seconds, one action, key zeroized.
 Agents you can actually read.
 Thread ↓ #OKXAI #AgentInfrastructure
 ```
-Media: problem banner + live feed screenshot.
+Media: `assets/banner.png` + `assets/screenshots/02-announce.png`.
 
 ## Post 2 — Demo video (Day 2)
 ```
@@ -23,7 +26,7 @@ Watch it pay 0.50 USDC. Watch a credential mint — and die.
 Watch the replay bounce off the gate.
 This is what "legible autonomy" looks like. ↓ 🎥
 ```
-Media: demo MP4 + thumbnail.
+Media: `assets/video/demo.mp4` + `assets/video/thumbnail.png`.
 
 ## Post 3 — Technical deep-dive (Day 3)
 ```
@@ -36,7 +39,7 @@ Under the hood of Hammurabi Handoff:
 6️⃣ Credential dies; receipt is already ash
 No standing keys. No blast radius. Nothing to steal at rest.
 ```
-Media: credential envelope graphic + architecture diagram (`assets/architecture.svg`).
+Media: `assets/screenshots/04-minted.png` + `assets/architecture.svg`.
 
 ## Post 4 — Why we built this (Day 4)
 ```
@@ -47,4 +50,4 @@ Hammurabi Handoff makes the channel itself the observability layer —
 five chat lines are the entire security story.
 The feed IS the audit.
 ```
-Media: feed screenshot + shell screenshot.
+Media: `assets/screenshots/03-restricted.png` + `assets/screenshots/05-replay-bounced.png`.
