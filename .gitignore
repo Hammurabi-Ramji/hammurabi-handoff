@@ -1,2 +1,6 @@
 /target
 **/*.rs.bk
+
+# Stylus verifier draft — intentionally held out of version control until it
+# passes `cargo stylus check`. Remove this line to bring contracts/ into the repo.
+/contracts/

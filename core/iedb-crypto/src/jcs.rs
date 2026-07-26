@@ -144,11 +144,7 @@ pub fn canonical_message(params: &Value, timestamp: i64) -> CryptoResult<Vec<u8>
 
 /// Sign a payload's canonical form bound to `timestamp`. Returns the 64-byte
 /// Ed25519 signature, or a canonicalization rejection (e.g. a float in params).
-pub fn sign_payload(
-    identity: &Identity,
-    params: &Value,
-    timestamp: i64,
-) -> CryptoResult<[u8; 64]> {
+pub fn sign_payload(identity: &Identity, params: &Value, timestamp: i64) -> CryptoResult<[u8; 64]> {
     let msg = canonical_message(params, timestamp)?;
     Ok(identity.sign_bytes(&msg))
 }

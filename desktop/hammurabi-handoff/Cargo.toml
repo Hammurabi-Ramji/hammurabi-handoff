@@ -19,6 +19,11 @@ tauri-app = [
     "dep:tauri-plugin-single-instance",
     "dep:tracing-subscriber",
 ]
+# Live x402 facilitator settlement backend (real HTTP). OFF by default so the
+# sovereign build stays offline and network-free — same posture as the OKX
+# edge's `okx-live`. Enabling it pulls in `reqwest`; wire the facilitator via
+# the `HANDOFF_X402_*` env vars (see `settlement_backend::facilitator`).
+x402-live = ["dep:reqwest"]
 
 [[bin]]
 name = "hammurabi-handoff"
@@ -48,6 +53,9 @@ tracing.workspace = true
 ulid.workspace = true
 hex.workspace = true
 rand.workspace = true
+
+# Live x402 facilitator client (only under `x402-live`)
+reqwest = { workspace = true, optional = true }
 
 # Desktop shell (only under `tauri-app`)
 tauri = { version = "2", optional = true, features = [] }

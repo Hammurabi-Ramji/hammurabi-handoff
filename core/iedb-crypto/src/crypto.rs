@@ -123,9 +123,15 @@ impl Drop for Identity {
 }
 
 /// Verify an Ed25519 `signature` over `msg` against `public_key`.
-pub fn verify_signature(public_key: &PublicKeyBytes, msg: &[u8], signature: &Signature) -> CryptoResult<()> {
-    let vk = VerifyingKey::from_bytes(public_key).map_err(|e| CryptoError::InvalidKey(e.to_string()))?;
-    vk.verify(msg, signature).map_err(|_| CryptoError::SignatureInvalid)
+pub fn verify_signature(
+    public_key: &PublicKeyBytes,
+    msg: &[u8],
+    signature: &Signature,
+) -> CryptoResult<()> {
+    let vk =
+        VerifyingKey::from_bytes(public_key).map_err(|e| CryptoError::InvalidKey(e.to_string()))?;
+    vk.verify(msg, signature)
+        .map_err(|_| CryptoError::SignatureInvalid)
 }
 
 /// Verify a raw 64-byte Ed25519 signature (byte-oriented; callers need no
@@ -165,7 +171,8 @@ impl EncryptedKeystore {
         let mut salt = [0u8; SALT_LEN];
         OsRng.fill_bytes(&mut salt);
         let mut key = derive_key(passphrase, &salt)?;
-        let cipher = ChaCha20Poly1305::new_from_slice(&key).map_err(|e| CryptoError::Keystore(e.to_string()))?;
+        let cipher = ChaCha20Poly1305::new_from_slice(&key)
+            .map_err(|e| CryptoError::Keystore(e.to_string()))?;
         key.zeroize();
 
         let mut nonce_bytes = [0u8; NONCE_LEN];
@@ -192,7 +199,8 @@ impl EncryptedKeystore {
         let ciphertext = &blob[HEADER_LEN..];
 
         let mut key = derive_key(passphrase, salt)?;
-        let cipher = ChaCha20Poly1305::new_from_slice(&key).map_err(|e| CryptoError::Keystore(e.to_string()))?;
+        let cipher = ChaCha20Poly1305::new_from_slice(&key)
+            .map_err(|e| CryptoError::Keystore(e.to_string()))?;
         key.zeroize();
 
         let mut plaintext = cipher
