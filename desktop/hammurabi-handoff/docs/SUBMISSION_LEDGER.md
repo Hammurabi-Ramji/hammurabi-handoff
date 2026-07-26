@@ -37,16 +37,32 @@ every correction is logged here.
 - [x] **OKX edge wired (roadmap B1):** `src/okx_bridge.rs` dispatches `iedb-oka` `OkxInvocation`s through the same in-process x402-gated router as the UI. 3 tests: full OKX loop (announce→402→settle→200 envelope→feed), burned-receipt replay bounce from the OKX edge, unknown-capability error. Dependency direction handoff→oka keeps OKX schema churn contained.
 - [x] **Stylus reference verifier (roadmap B2a):** `settlement::verify_handoff` — the byte-level, `no_std`-portable logic the on-chain contract would run (structural TTL + validity window + Ed25519 over `canonical ‖ 0x00 ‖ issued_at`). `OneShotEnvelope::verify` proves the envelope self-verifies off its wire form; failure-mode test covers tamper/expiry/TTL-stretch/bad-sig. On-chain deployment remains roadmap G-1 — the reference is not claimed as deployed. `cargo test -p hammurabi-handoff` = 23/23.
 
+## Resolved since the 2026-07-08 draft
+
+- [x] **GitHub repo publication:** public — `Hammurabi-Ramji/hammurabi-handoff`,
+      confirmed via `gh repo view` (2026-07-26). `asp/manifest.json`
+      `author.url` already points at the live repo and resolves; the earlier
+      `github.com/hammurabi/iedb` 404 caveat no longer applies.
+- [x] **CI workflow:** `.github/workflows/handoff-ci.yml` landed via PR #1
+      (`claude/hammurabi-handoff-inspection-ghelfx`, merged 2026-07-26) —
+      verified green on the merge commit and on the follow-up LICENSE/icon
+      commit. The README badge is live, not aspirational.
+- [x] **LICENSE file:** added (MIT) — the README claimed this since the
+      first commit but the file didn't exist until now.
+- [x] **`icons/icon.ico`:** regenerated from `assets/logo.svg` at 16–256px
+      (was a self-flagged 16×16 placeholder).
+- [x] **G-4 seam (live x402 facilitator):** landed via the same PR —
+      `settlement_backend.rs`, feature-gated (`x402-live`, off by default).
+      Honesty boundary unchanged: the seam is real and tested, the
+      facilitator client is unverified against any live facilitator. Still
+      roadmap to actually point it at one.
+
 ## Still owed (human / external — cannot be produced in-repo)
 
-- [ ] **`author.url` caveat (accepted 2026-07-08):** `asp/manifest.json`
-      `author.url` is `https://github.com/hammurabi/iedb`, which 404s until the
-      repo is made public. Owner ships as-is; repo visibility is to be toggled
-      to public **concurrently with** the OKX submission so the link resolves
-      before any judge clicks it. Must be verified live at submission time.
 - [ ] OKX.AI ASP account + gallery form + Google form
 - [ ] X account; schedule the four posts from `SOCIAL_POSTS.md`
-- [ ] Demo video recording (script ready) + thumbnail
+- [ ] Demo video recording + thumbnail — script ready (`DEMO_SCRIPT.md`),
+      full shot-by-shot capture guide now in `docs/VIDEO_PREP.md`
 - [x] PNG exports: `assets/logo.png` (512×512, transparent) + `assets/banner.png`
       (1200×630, `#0b0e14`). **Banner spec (ratified 2026-07-08):** purpose-built
       hero (not an architecture crop), two-line tagline **"Hammurabi Handoff" /
@@ -54,9 +70,13 @@ every correction is logged here.
       good exists."* This two-line form supersedes the earlier single-line
       literal ("… : Zero-Telemetry. 1Shot Settlement.") — ratified as
       semantically identical and more legible. Source: `assets/banner.svg`.
-- [ ] Live screenshots of the running shell (3–5, per checklist)
-- [ ] GitHub repo publication decision (this crate lives inside the private IEDB workspace)
-- [ ] Live ASP deployment (requires G-4/G-5/G-6 adapters — see `docs/specs/sovereign-stack-phase0-alignment.md` §3 at the workspace root)
+- [ ] Live screenshots of the running shell (3–5, per checklist) — capture
+      guide with exact clicks and expected on-screen text now in
+      `docs/VIDEO_PREP.md` Part A; target folder
+      `assets/screenshots/` (created, empty, awaiting the 5 files)
+- [ ] Live ASP deployment (requires G-5/G-6 — the 1Shot broadcast adapter
+      and OKX manifest submission; G-4's facilitator seam is landed but
+      still needs a real facilitator wired in and testnet-verified)
 
 ## Review-finding deferrals (adversarial review, 2026-07-07)
 
