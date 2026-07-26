@@ -15,7 +15,7 @@
 
 use std::sync::Arc;
 
-use axum::extract::State;
+use axum::extract::{DefaultBodyLimit, State};
 use axum::http::StatusCode;
 use axum::middleware;
 use axum::response::{IntoResponse, Response};
@@ -39,10 +39,19 @@ pub struct HandoffState {
 }
 
 impl HandoffState {
+    /// Default state: mock settlement backend (offline, deterministic).
     pub fn new() -> Self {
+        Self::with_backend(crate::settlement_backend::SettlementBackend::default())
+    }
+
+    /// State over a specific settlement backend — the composition root
+    /// (`app.rs`) uses this to arm the live facilitator when `x402-live`
+    /// is enabled and configured; every other caller (tests, headless
+    /// defaults) gets the mock via [`HandoffState::new`].
+    pub fn with_backend(backend: crate::settlement_backend::SettlementBackend) -> Self {
         Self {
             mesh: Arc::new(MeshBus::new()),
-            gate: Arc::new(X402Gate::new()),
+            gate: Arc::new(X402Gate::with_backend(backend)),
         }
     }
 }
@@ -52,6 +61,14 @@ impl Default for HandoffState {
         Self::new()
     }
 }
+
+/// Every request body this router ever legitimately needs is a few hundred
+/// bytes (an `AgentIntent` or a `{"intent_id": ...}`). Axum applies no body
+/// size limit unless one is set explicitly — without this, any caller on
+/// loopback (including a misbehaving script, not just a hostile one) could
+/// hand the process a multi-gigabyte body and OOM it. 1 MiB is generous
+/// headroom, not a tight fit.
+const MAX_REQUEST_BODY_BYTES: usize = 1_048_576;
 
 /// Build the full router. The x402 guard is layered onto `/execute` only —
 /// announcements and the feed are free; execution is metered.
@@ -65,6 +82,7 @@ pub fn handoff_router(state: HandoffState) -> Router {
             post(execute).layer(middleware::from_fn_with_state(state.clone(), payment_guard)),
         )
         .with_state(state)
+        .layer(DefaultBodyLimit::max(MAX_REQUEST_BODY_BYTES))
 }
 
 /// Serve the router on loopback **only**. Sovereignty invariant: this is
@@ -370,5 +388,33 @@ mod tests {
         )
         .await;
         assert_eq!(status, StatusCode::PAYMENT_REQUIRED);
+    }
+
+    /// Proves the body-size guard is real, not assumed: without it, Axum
+    /// buffers a request body with no cap at all. Written against the raw
+    /// `Request`/`Body` types rather than the `send()` helper above because
+    /// a 413 rejection's body is plain text, not JSON — `send()` assumes JSON.
+    ///
+    /// Targets `/x402/settle` (a plain `Json<SettleRequest>` extractor), not
+    /// `/agent/announce` — that route takes `Option<Json<AgentIntent>>`,
+    /// and axum's blanket `Option<Json<T>>` impl swallows *any* extraction
+    /// failure (malformed JSON, or this same size-limit rejection) into
+    /// `None`, so the request still lands as 200 with the mock intent. The
+    /// body-limit layer still stops the stream at the cap either way — no
+    /// unbounded buffering happens on `/agent/announce` — but the caller
+    /// never sees a 413 there. Same root cause as the already-documented
+    /// SUBMISSION_LEDGER.md deferred item on `Option<Json<AgentIntent>>`.
+    #[tokio::test]
+    async fn oversized_body_is_rejected_before_it_reaches_a_handler() {
+        let router = handoff_router(HandoffState::new());
+        let oversized = "a".repeat(MAX_REQUEST_BODY_BYTES + 1);
+        let req = Request::builder()
+            .method("POST")
+            .uri("/x402/settle")
+            .header("content-type", "application/json")
+            .body(Body::from(oversized))
+            .expect("request builds");
+        let resp = router.oneshot(req).await.expect("infallible");
+        assert_eq!(resp.status(), StatusCode::PAYLOAD_TOO_LARGE);
     }
 }

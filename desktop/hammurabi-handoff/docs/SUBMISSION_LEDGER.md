@@ -56,6 +56,16 @@ every correction is logged here.
       Honesty boundary unchanged: the seam is real and tested, the
       facilitator client is unverified against any live facilitator. Still
       roadmap to actually point it at one.
+- [x] **G-4 wiring (2026-07-26, follow-up to the above):** the seam existed
+      but nothing constructed `SettlementBackend::Facilitator` anywhere —
+      `HandoffState::new()` always hardcoded the mock, feature flag or not.
+      Added `HandoffState::with_backend`,
+      `settlement_backend::from_env_or_default()`, and wired the composition
+      root (`app.rs`) to call it. Now `--features tauri-app,x402-live` +
+      every `HANDOFF_X402_*` env var actually arms the live backend at
+      startup — previously it was a no-op even fully configured. Covered by
+      `settlement_backend::env_wiring_tests` (only compiled/run under
+      `--features x402-live`, so it doesn't touch the default CI gate).
 
 ## Still owed (human / external — cannot be produced in-repo)
 
@@ -78,6 +88,37 @@ every correction is logged here.
       and OKX manifest submission; G-4's facilitator seam is landed but
       still needs a real facilitator wired in and testnet-verified)
 
+## Full adversarial review (2026-07-26)
+
+Every source file in `hammurabi-handoff` and `iedb-oka` was read directly
+(not sampled), plus `iedb-crypto::jcs` (the canonicalization/signing core)
+and spot checks of the rest of `iedb-crypto` against its own test suite.
+Grepped all of `src/` for `.unwrap()` / `.expect()` / `panic!` /
+`unreachable!`: every non-test occurrence is on a value that's structurally
+float-free by the type system (`AgentIntent`/`OneShotEnvelope` contain no
+`f64` anywhere in their field graph), so the two `.expect("float-free ...
+always serializes")` calls cannot actually panic — confirmed by
+construction, not by assumption.
+
+Findings: three real gaps fixed (receipt eviction, mesh log cap, request
+body limit — see the numbered list below), one real gap closed at the
+design level (G-4's dead wiring — see "Resolved since" above), one nuance
+found and documented rather than fixed (`Option<Json>` swallowing a 413,
+item 5 below). Nothing found that changes the honesty posture already
+documented elsewhere in this file — no claim in README/TRACK_ALIGNMENT/
+OKX_LISTING_COPY turned out to be false, only the G-4 README wording that
+undersold how *un*-wired the seam actually was until tonight.
+
+Verified green after every change, across the full feature matrix, not just
+the default one:
+
+| Build | Tests | fmt | clippy -D warnings |
+|---|---|---|---|
+| default | 27 handoff / 38 crypto / 7 oka | clean | clean |
+| `--features tauri-app` | (check only, no test target) | — | clean |
+| `--features x402-live` | 27 handoff (incl. `env_wiring_tests`) | clean | clean |
+| `--features tauri-app,x402-live` | check only | — | (not re-run; default+each singly covers the surface) |
+
 ## Review-finding deferrals (adversarial review, 2026-07-07)
 
 An in-session multi-agent review raised 9 findings; verification agents were
@@ -88,16 +129,40 @@ deferred until the corresponding adapter goes live:
 
 1. **Receipt ids visible on the ungated feed** — on loopback with a mock
    settler this grants nothing (anyone local can mint receipts anyway); must
-   be redacted the moment G-4 (live x402) lands.
-2. **No receipt expiry/eviction** — unbounded map + indefinitely-valid
-   receipts; add TTL eviction with G-4.
-3. **Unbounded mesh log** — cap/ring-buffer before any long-running deployment.
+   be redacted the moment G-4 (live x402) lands. *Still deferred* — G-4 is
+   wired but off by default; revisit when a build actually ships with it on.
+2. ~~**No receipt expiry/eviction**~~ — **fixed 2026-07-26.**
+   `x402::RECEIPT_STALE_AFTER_SECS` (600s) is swept opportunistically inside
+   `settle`/`mock_settle` before each insert, so the treasury is bounded by
+   `settle-rate × 600s` regardless of how long the process runs or how many
+   requests never come back to redeem. Tests:
+   `stale_unredeemed_receipts_are_evicted_on_next_settle`,
+   `receipts_inside_the_stale_window_survive_a_sweep`.
+3. ~~**Unbounded mesh log**~~ — **fixed 2026-07-26.** `mesh::MAX_LOG_LEN`
+   (2,000) caps the retained log; `post()` drains the oldest entries past the
+   cap. `seq` numbering stays monotonic and gap-aware through the trim, so a
+   client can tell it missed lines rather than mistake a trimmed feed for a
+   fresh one. Test: `log_is_capped_and_seq_stays_monotonic_across_the_trim`.
 4. **Caller-controlled `agent_handle` as feed sender** — audit-trail
    impersonation; bind handles to authenticated agent identities when A2A
-   goes multi-process.
+   goes multi-process. *Still deferred* — correctly scoped as a
+   multi-process concern, not a same-machine one.
 5. **`Option<Json<AgentIntent>>` treats malformed JSON as "no body"** —
-   acceptable for the demo announce endpoint; tighten to a 400 when real
-   agents integrate.
+   *still deferred, and sharper than first described.* While adding a
+   request-body size limit (below) it turned out this same swallow also
+   absorbs a too-large-body rejection on `/agent/announce` specifically: the
+   body-limit layer still stops the stream at the cap (no unbounded
+   buffering), but the caller sees 200 + the mock intent instead of a 413.
+   `/execute` and `/x402/settle` use a plain (non-`Option`) `Json` extractor
+   and do surface the 413 correctly — verified by
+   `server::tests::oversized_body_is_rejected_before_it_reaches_a_handler`.
+   Tighten `/agent/announce` to a real 400/413 when real agents integrate,
+   same as originally noted.
 6. **Announce always narrates the fixed mock line** — intentional for the
    Legible Autonomy demo string; derive the line from the intent when custom
-   intents matter.
+   intents matter. *Still deferred, unchanged.*
+7. **New, found and fixed 2026-07-26: unbounded request body.** Axum applies
+   no body-size limit unless one is set explicitly; nothing did. Added
+   `DefaultBodyLimit::max(1 MiB)` (`server::MAX_REQUEST_BODY_BYTES`) to the
+   router. 1 MiB is generous headroom for payloads that are actually a few
+   hundred bytes, not a tight fit.

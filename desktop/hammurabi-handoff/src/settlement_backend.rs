@@ -70,6 +70,56 @@ pub enum SettlementBackend {
 }
 
 impl SettlementBackend {
+    /// Human-readable label for the RAMesh startup line — "if it isn't in
+    /// the feed, it didn't happen" applies to which settlement backend is
+    /// armed, not just to agent actions.
+    pub fn label(&self) -> &'static str {
+        match self {
+            SettlementBackend::Mock => "mock (offline, deterministic)",
+            #[cfg(feature = "x402-live")]
+            SettlementBackend::Facilitator(_) => "live x402 facilitator",
+        }
+    }
+}
+
+/// Pick the backend the composition root (`app.rs`) should arm at startup.
+///
+/// Without `x402-live` this always returns [`SettlementBackend::Mock`] — the
+/// facilitator variant doesn't exist in the type at all off that feature, so
+/// there's no ambiguity to resolve. With `x402-live` compiled in, a live
+/// facilitator is armed **only if** every required `HANDOFF_X402_*` env var
+/// is set ([`facilitator::FacilitatorConfig::from_env`]); otherwise this
+/// falls back to the mock rather than failing startup — enabling the feature
+/// flag alone must never be enough to accidentally go live.
+#[cfg(feature = "x402-live")]
+pub fn from_env_or_default() -> SettlementBackend {
+    match facilitator::FacilitatorConfig::from_env() {
+        Ok(config) => {
+            tracing::info!(
+                base_url = %config.base_url,
+                network = %config.network,
+                "x402-live: HANDOFF_X402_* present — arming the live facilitator backend"
+            );
+            SettlementBackend::Facilitator(facilitator::FacilitatorClient::new(config))
+        }
+        Err(_) => {
+            tracing::info!(
+                "x402-live is compiled in but HANDOFF_X402_* env vars are not fully set — \
+                 falling back to the mock settlement backend"
+            );
+            SettlementBackend::Mock
+        }
+    }
+}
+
+/// Mirrors the `x402-live` version above: without the feature, the mock is
+/// the only backend that exists.
+#[cfg(not(feature = "x402-live"))]
+pub fn from_env_or_default() -> SettlementBackend {
+    SettlementBackend::Mock
+}
+
+impl SettlementBackend {
     /// Settle the execution fee for `intent_id`, returning a single-use
     /// [`PaymentReceipt`] the gate will record. `payment` is the client's x402
     /// `PaymentPayload` (required by the live backend, ignored by the mock).
@@ -295,6 +345,57 @@ pub mod facilitator {
             resp.json::<R>()
                 .await
                 .map_err(|e| SettlementError::Transport(e.to_string()))
+        }
+    }
+}
+
+#[cfg(all(test, feature = "x402-live"))]
+mod env_wiring_tests {
+    use super::*;
+
+    const VARS: &[&str] = &[
+        "HANDOFF_X402_FACILITATOR_URL",
+        "HANDOFF_X402_NETWORK",
+        "HANDOFF_X402_ASSET",
+        "HANDOFF_X402_PAY_TO",
+    ];
+
+    /// One test, not two: env vars are process-global, and `cargo test` runs
+    /// tests on threads within one process, so two tests racing to set/unset
+    /// the same vars would be flaky. Sequencing missing → present → cleaned
+    /// up inside a single test avoids that entirely.
+    #[test]
+    fn from_env_or_default_falls_back_then_arms_on_full_config() {
+        for k in VARS {
+            std::env::remove_var(k);
+        }
+
+        assert!(
+            matches!(from_env_or_default(), SettlementBackend::Mock),
+            "missing HANDOFF_X402_* must fall back to Mock, not panic or half-configure"
+        );
+
+        std::env::set_var(
+            "HANDOFF_X402_FACILITATOR_URL",
+            "https://x402.example/facilitator",
+        );
+        std::env::set_var("HANDOFF_X402_NETWORK", "base-sepolia");
+        std::env::set_var(
+            "HANDOFF_X402_ASSET",
+            "0x0000000000000000000000000000000000000001",
+        );
+        std::env::set_var(
+            "HANDOFF_X402_PAY_TO",
+            "0x0000000000000000000000000000000000000002",
+        );
+
+        assert!(
+            matches!(from_env_or_default(), SettlementBackend::Facilitator(_)),
+            "a fully-populated HANDOFF_X402_* set must arm the live facilitator"
+        );
+
+        for k in VARS {
+            std::env::remove_var(k);
         }
     }
 }

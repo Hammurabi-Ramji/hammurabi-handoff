@@ -105,6 +105,15 @@ pub enum X402Error {
     IntentMismatch,
 }
 
+/// Unredeemed receipts older than this are swept the next time any intent
+/// settles — bounds the treasury under sustained `POST /x402/settle` load
+/// without a background task or an ambient clock: eviction runs
+/// opportunistically at settle-time, keyed off the same caller-supplied
+/// `now` the receipt itself is stamped with. A receipt actually gets
+/// redeemed in seconds in the real flow (well inside the credential's own
+/// 60s TTL), so ten minutes of grace is generous, not tight.
+pub const RECEIPT_STALE_AFTER_SECS: i64 = 600;
+
 /// The payment gate: an in-memory treasury of settled, unredeemed receipts,
 /// plus the [`SettlementBackend`] that produces them (mock by default; a live
 /// x402 facilitator under the `x402-live` feature).
@@ -141,10 +150,9 @@ impl X402Gate {
         now: i64,
     ) -> Result<PaymentReceipt, SettlementError> {
         let receipt = self.backend.settle(intent_id, payment, now).await?;
-        self.receipts
-            .write()
-            .unwrap_or_else(|e| e.into_inner())
-            .insert(receipt.receipt_id.clone(), receipt.clone());
+        let mut receipts = self.receipts.write().unwrap_or_else(|e| e.into_inner());
+        evict_stale(&mut receipts, now);
+        receipts.insert(receipt.receipt_id.clone(), receipt.clone());
         Ok(receipt)
     }
 
@@ -158,10 +166,9 @@ impl X402Gate {
             amount_micro_usdc: EXECUTION_FEE_MICRO_USDC,
             cleared_at: now,
         };
-        self.receipts
-            .write()
-            .unwrap_or_else(|e| e.into_inner())
-            .insert(receipt.receipt_id.clone(), receipt.clone());
+        let mut receipts = self.receipts.write().unwrap_or_else(|e| e.into_inner());
+        evict_stale(&mut receipts, now);
+        receipts.insert(receipt.receipt_id.clone(), receipt.clone());
         receipt
     }
 
@@ -186,6 +193,15 @@ impl Default for X402Gate {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Drop unredeemed receipts older than [`RECEIPT_STALE_AFTER_SECS`] relative
+/// to `now`. Called with the write lock already held, right before a new
+/// receipt is inserted, so the map never grows past
+/// `(settle-rate × RECEIPT_STALE_AFTER_SECS)` regardless of how long the
+/// process runs or how many requests never come back to redeem.
+fn evict_stale(receipts: &mut HashMap<String, PaymentReceipt>, now: i64) {
+    receipts.retain(|_, r| now.saturating_sub(r.cleared_at) < RECEIPT_STALE_AFTER_SECS);
 }
 
 /// The Axum middleware guard on `/execute`.
@@ -273,6 +289,34 @@ mod tests {
         assert_eq!(
             gate.redeem(&receipt.receipt_id, "intent-1"),
             Err(X402Error::UnknownReceipt)
+        );
+    }
+
+    #[test]
+    fn stale_unredeemed_receipts_are_evicted_on_next_settle() {
+        let gate = X402Gate::new();
+        let old = gate.mock_settle("intent-old", 0);
+        // Nobody ever redeemed it. A later, unrelated settlement should
+        // sweep it out rather than let the treasury grow without bound.
+        gate.mock_settle("intent-new", RECEIPT_STALE_AFTER_SECS + 1);
+        assert_eq!(
+            gate.redeem(&old.receipt_id, "intent-old"),
+            Err(X402Error::UnknownReceipt),
+            "a receipt older than the stale window must be evicted, not just ignored"
+        );
+    }
+
+    #[test]
+    fn receipts_inside_the_stale_window_survive_a_sweep() {
+        let gate = X402Gate::new();
+        let fresh = gate.mock_settle("intent-a", 0);
+        // Well within the window relative to this second settle's `now` —
+        // the sweep must not be trigger-happy about receipts that are just
+        // sitting there normally, e.g. between settle and the paired execute.
+        gate.mock_settle("intent-b", RECEIPT_STALE_AFTER_SECS - 1);
+        assert!(
+            gate.redeem(&fresh.receipt_id, "intent-a").is_ok(),
+            "a receipt inside the stale window must not be swept early"
         );
     }
 

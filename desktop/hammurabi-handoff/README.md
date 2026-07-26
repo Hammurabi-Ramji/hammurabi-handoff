@@ -158,15 +158,19 @@ See `C:\IEDB\docs\specs\sovereign-stack-phase0-alignment.md` §3: Stylus
 verifier contract (G-1), WASM vault surface via `wasm/iedb-wasm` (G-2),
 Svelte 5 scaffold (G-3), OKX.AI ASP manifest submission (G-6).
 
-**G-4 (live x402 facilitator) — seam landed, opt-in:** `settlement_backend.rs`
-adds a `SettlementBackend` behind the `x402-live` feature flag (off by
-default; pulls in `reqwest` only when enabled). The gate, receipt ledger, and
-vault are unchanged — `/x402/settle` now accepts an optional client
-`PaymentPayload` that the mock backend ignores and the live backend requires.
-Wire a real facilitator via `HANDOFF_X402_*` env vars. **Not yet verified
-against a live facilitator or a testnet** — confirm the wire format against
-your facilitator's actual API and round-trip on testnet USDC before pointing
-this at real money.
+**G-4 (live x402 facilitator) — wired, opt-in, off by default:**
+`settlement_backend.rs` adds a `SettlementBackend` behind the `x402-live`
+feature flag (off by default; pulls in `reqwest` only when enabled). The
+composition root (`app.rs`) arms it automatically at startup via
+`settlement_backend::from_env_or_default()` — build with
+`--features tauri-app,x402-live` and set every `HANDOFF_X402_*` env var and
+the live facilitator is what answers `/x402/settle`; leave any of them unset
+and it falls back to the mock rather than half-configuring. The gate, receipt
+ledger, and vault are unchanged — `/x402/settle` now accepts an optional
+client `PaymentPayload` that the mock backend ignores and the live backend
+requires. **Not yet verified against a live facilitator or a testnet** —
+confirm the wire format against your facilitator's actual API and round-trip
+on testnet USDC before pointing this at real money.
 
 **G-5 (live 1Shot broadcast)** remains fully roadmap — `settlement.rs`'s
 `local://` endpoint is unchanged.

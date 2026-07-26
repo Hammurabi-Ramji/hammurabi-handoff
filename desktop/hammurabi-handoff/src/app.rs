@@ -19,7 +19,13 @@ pub const LOOPBACK_PORT: u16 = 3402;
 
 /// Run the Hammurabi Handoff shell.
 pub fn run() -> Result<(), Box<dyn std::error::Error>> {
-    let state = HandoffState::new();
+    // Composition root for the settlement backend: mock unless `x402-live`
+    // is compiled in *and* every `HANDOFF_X402_*` env var is set. Enabling
+    // the feature flag alone must never be enough to go live — see
+    // `settlement_backend::from_env_or_default`.
+    let backend = crate::settlement_backend::from_env_or_default();
+    let backend_label = backend.label();
+    let state = HandoffState::with_backend(backend);
     let router = handoff_router(state.clone());
 
     tauri::Builder::default()
@@ -62,7 +68,7 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
                 "system/handoff",
                 MeshEventKind::Info,
                 &format!(
-                    "Hammurabi Handoff online — RAMesh live, x402 gate armed, loopback :{LOOPBACK_PORT}."
+                    "Hammurabi Handoff online — RAMesh live, x402 gate armed ({backend_label}), loopback :{LOOPBACK_PORT}."
                 ),
             );
             Ok(())

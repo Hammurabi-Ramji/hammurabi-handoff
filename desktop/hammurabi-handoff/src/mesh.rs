@@ -25,6 +25,15 @@ pub const OPS_CHANNEL: &str = "#handoff-ops";
 /// block a post (the log remains the source of truth).
 const LIVE_CAPACITY: usize = 256;
 
+/// Cap on the retained log. RAMesh is a live audit feed for one operator
+/// session, not a database — without a bound, a long-running process (or a
+/// script hammering `/agent/announce` in a loop) grows the log forever.
+/// `seq` numbering stays monotonic and gap-aware even as old lines are
+/// evicted, so a client that fetches `feed()` after missing entries can
+/// tell it has a gap (its lowest `seq` is nonzero) rather than mistake a
+/// trimmed feed for a fresh one.
+const MAX_LOG_LEN: usize = 2_000;
+
 /// Classification of a mesh line, so the frontend can style/filter without
 /// parsing prose.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -99,10 +108,14 @@ impl MeshBus {
             body: body.to_string(),
             at: Utc::now().to_rfc3339(),
         };
-        self.log
-            .write()
-            .unwrap_or_else(|e| e.into_inner())
-            .push(msg.clone());
+        {
+            let mut log = self.log.write().unwrap_or_else(|e| e.into_inner());
+            log.push(msg.clone());
+            if log.len() > MAX_LOG_LEN {
+                let excess = log.len() - MAX_LOG_LEN;
+                log.drain(0..excess);
+            }
+        }
         let _ = self.live.send(msg.clone());
         msg
     }
@@ -165,5 +178,22 @@ mod tests {
         let bus = MeshBus::new();
         bus.post("agent/scout-1", MeshEventKind::Intent, "hello");
         assert!(bus.transcript().contains("<agent/scout-1> hello"));
+    }
+
+    #[test]
+    fn log_is_capped_and_seq_stays_monotonic_across_the_trim() {
+        let bus = MeshBus::new();
+        let overflow = 50;
+        for i in 0..(MAX_LOG_LEN + overflow) {
+            bus.post("agent/scout-1", MeshEventKind::Info, &format!("line {i}"));
+        }
+        let feed = bus.feed();
+        assert_eq!(feed.len(), MAX_LOG_LEN, "log must not grow past the cap");
+        // The oldest `overflow` lines were evicted — the retained window
+        // starts right where they left off, seq numbering unbroken.
+        assert_eq!(feed[0].seq, overflow as u64);
+        assert_eq!(feed[0].body, format!("line {overflow}"));
+        let last = feed.last().unwrap();
+        assert_eq!(last.seq, (MAX_LOG_LEN + overflow - 1) as u64);
     }
 }
