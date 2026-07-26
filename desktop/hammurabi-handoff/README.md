@@ -1,5 +1,7 @@
 # Hammurabi Handoff — JIT Vault ASP
 
+[![CI](https://github.com/Hammurabi-Ramji/hammurabi-handoff/actions/workflows/handoff-ci.yml/badge.svg)](https://github.com/Hammurabi-Ramji/hammurabi-handoff/actions/workflows/handoff-ci.yml)
+
 **Credentials that die after one use. Agents you can actually read.**
 
 A local-first, zero-telemetry Agent Service Provider (ASP): AI agents announce
@@ -119,24 +121,31 @@ curl -s -X POST http://127.0.0.1:3402/execute \
 
 ## Continuous integration
 
-`.github/workflows/handoff-ci.yml` gates this crate + `iedb-oka` on four
-checks, all verified green locally before the workflow was written:
-`cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo build`, `cargo test`
-(23/23 handoff, 5/5 oka). It is **scoped to the submission crates on purpose** —
-the wider IEDB workspace has legacy crates that don't pass `-D warnings`, so a
-workspace-wide gate would be red and misleading. Once the repo is published,
-drop in the badge (replace `OWNER/REPO`):
-
-```markdown
-[![CI](https://github.com/OWNER/REPO/actions/workflows/handoff-ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/handoff-ci.yml)
-```
+`.github/workflows/handoff-ci.yml` (badge above, live on `main`) gates this
+crate + `iedb-oka` on four checks: `cargo fmt --check`, `cargo clippy -- -D
+warnings`, `cargo build`, `cargo test` (23/23 handoff, 7/7 oka, 38/38
+iedb-crypto). It is **scoped to the submission crates on purpose** — the
+wider IEDB workspace has legacy crates that don't pass `-D warnings`, so a
+workspace-wide gate would be red and misleading.
 
 ## Roadmap
 
 See `C:\IEDB\docs\specs\sovereign-stack-phase0-alignment.md` §3: Stylus
 verifier contract (G-1), WASM vault surface via `wasm/iedb-wasm` (G-2),
-Svelte 5 scaffold (G-3), opt-in live x402/1Shot adapters (G-4/G-5), OKX.AI
-ASP manifest submission (G-6).
+Svelte 5 scaffold (G-3), OKX.AI ASP manifest submission (G-6).
+
+**G-4 (live x402 facilitator) — seam landed, opt-in:** `settlement_backend.rs`
+adds a `SettlementBackend` behind the `x402-live` feature flag (off by
+default; pulls in `reqwest` only when enabled). The gate, receipt ledger, and
+vault are unchanged — `/x402/settle` now accepts an optional client
+`PaymentPayload` that the mock backend ignores and the live backend requires.
+Wire a real facilitator via `HANDOFF_X402_*` env vars. **Not yet verified
+against a live facilitator or a testnet** — confirm the wire format against
+your facilitator's actual API and round-trip on testnet USDC before pointing
+this at real money.
+
+**G-5 (live 1Shot broadcast)** remains fully roadmap — `settlement.rs`'s
+`local://` endpoint is unchanged.
 
 ## License
 
