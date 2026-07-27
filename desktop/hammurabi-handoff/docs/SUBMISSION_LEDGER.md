@@ -72,7 +72,8 @@ every correction is logged here.
 - [ ] OKX.AI ASP account + gallery form + Google form
 - [ ] X account; schedule the four posts from `SOCIAL_POSTS.md`
 - [ ] Demo video recording + thumbnail — script ready (`DEMO_SCRIPT.md`),
-      full shot-by-shot capture guide now in `docs/VIDEO_PREP.md`
+      full shot-by-shot capture guide in `docs/VIDEO_PREP.md`; beat → source →
+      asset provenance in `docs/amg/capture-map.json`
 - [x] PNG exports: `assets/logo.png` (512×512, transparent) + `assets/banner.png`
       (1200×630, `#0b0e14`). **Banner spec (ratified 2026-07-08):** purpose-built
       hero (not an architecture crop), two-line tagline **"Hammurabi Handoff" /
@@ -81,9 +82,10 @@ every correction is logged here.
       literal ("… : Zero-Telemetry. 1Shot Settlement.") — ratified as
       semantically identical and more legible. Source: `assets/banner.svg`.
 - [ ] Live screenshots of the running shell (3–5, per checklist) — capture
-      guide with exact clicks and expected on-screen text now in
+      guide with exact clicks and expected on-screen text in
       `docs/VIDEO_PREP.md` Part A; target folder
-      `assets/screenshots/` (created, empty, awaiting the 5 files)
+      `assets/screenshots/` (created, empty, awaiting the 5 files); map in
+      `docs/amg/capture-map.json`
 - [ ] Live ASP deployment (requires G-5/G-6 — the 1Shot broadcast adapter
       and OKX manifest submission; G-4's facilitator seam is landed but
       still needs a real facilitator wired in and testnet-verified)

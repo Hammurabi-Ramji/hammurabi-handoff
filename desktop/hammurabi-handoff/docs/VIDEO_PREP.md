@@ -28,16 +28,21 @@ recording, the four buttons wrap awkwardly).
 `SUBMISSION_LEDGER.md` asks for 3–5 live shots of the shell. Use
 **Win+Shift+S** (Snipping Tool region capture) after each click below, or
 **Win+G** → camera icon if Game Bar is already open. Save each as
-`assets/screenshots/0N-<name>.png` (create that folder — it doesn't exist
-yet).
+`assets/screenshots/0N-<name>.png` — that folder already exists (`.gitkeep`
+only; drop the five PNGs in).
+
+Record against the **shipped** shell (`ui/dist/index.html`). Do not rebuild
+from `ui/src/App.svelte` for this take — the Svelte source enables button 3
+after announce; the shipped dist enables it only after the 402 (matches this
+table and `DEMO_SCRIPT.md`).
 
 | # | Filename | Action before capturing | What must be visible on screen |
 |---|----------|--------------------------|----------------------------------|
-| 1 | `01-idle.png` | Fresh launch, before any click | Empty feed, header, all four buttons; buttons 2–4 greyed out (`disabled`), status reads `idle` |
+| 1 | `01-idle.png` | Fresh launch, before any click | One grey `<system/handoff>` startup line (posted before the UI even connects — not an empty feed), header, all four buttons; buttons 2–4 greyed out (`disabled`), status reads `idle` |
 | 2 | `02-announce.png` | Click **1 · Announce opportunity** | Green line: `<agent/scout-1> Opportunity found: ETH limit order at $3,100. Requesting execution.` Status bar shows `intent 01…`. Button 2 now enabled. |
 | 3 | `03-restricted.png` | Click **2 · Request execution** | Red line: `<gate/x402> Action restricted. x402 payment of 0.50 USDC required.` Status: `402 — payment required`. Button 3 enabled. |
-| 4 | `04-minted.png` | Click **3 · Settle x402**, then **4 · Execute with receipt** | Amber payment line, then purple line: `<vault/handshake> Payment confirmed. Ephemeral Handshake credential minted.`, then cyan settlement line ending `staged for gasless Stylus broadcast…`. Status: `settled — envelope 01… (TTL 60s)` |
-| 5 | `05-replay-bounced.png` | Click **4 · Execute with receipt** again (same receipt) | A **second** red restriction line appears — the burned receipt bouncing. This is the security proof shot; caption it as such wherever it's used. |
+| 4 | `04-minted.png` | Click **3 · Settle x402 (0.50 USDC)**, then **4 · Execute with receipt** | Amber payment line, then purple line: `<vault/handshake> Payment confirmed. Ephemeral Handshake credential minted.`, then cyan settlement line ending `staged for gasless Stylus broadcast…`. Status: `settled — envelope 01… (TTL 60s)` |
+| 5 | `05-replay-bounced.png` | Click **4 · Execute with receipt** again (same receipt) | A **second** red restriction line appears — the burned receipt bouncing. Status: `refused: 402`. This is the security proof shot; caption it as such wherever it's used. |
 
 These five, in order, are also the whole story for a static OKX gallery
 carousel if the portal wants stills instead of (or alongside) video.
@@ -87,8 +92,8 @@ re-announce, and go again from a clean feed.
 | 0:05–0:20 | The problem | Voiceover only, no app on screen yet (or dim/blur the idle window behind it) | — |
 | 0:20–0:40 | The feed | Click **1** | Green announce line lands live, as in screenshot 2 above |
 | 0:40–0:50 | The gate | Click **2** | Red 402 refusal line, as in screenshot 3 |
-| 0:50–1:05 | The mint | Click **3**, then **4** | Payment line → purple mint line → cyan settlement line, as in screenshot 4 |
-| 1:05–1:20 | The kill test | Click **4** again (same receipt) | Second red refusal — the replay bounce, as in screenshot 5 |
+| 0:50–1:05 | The mint | Click **3 · Settle x402 (0.50 USDC)**, then **4** | Payment line → purple mint line → cyan settlement line, as in screenshot 4 |
+| 1:05–1:20 | The kill test | Click **4** again (same receipt) | Second red refusal — the replay bounce; status `refused: 402`, as in screenshot 5 |
 | 1:20–1:25 | Close | Cut to `assets/logo.svg`/banner + repo link | "Hammurabi Handoff. Legible autonomy. Ship it." |
 
 Narration is `DEMO_SCRIPT.md` word-for-word — it was written against this
@@ -119,9 +124,10 @@ video consistent with the code).
 
 ### Where everything goes — this part is a pure drop-in, no doc edits needed
 
-The folders and every reference to these files already exist in the repo,
-wired to these exact paths. Save under these names and you're done — README,
-the OKX listing copy source, and the social posts already point here:
+The drop folders (`assets/screenshots/`, `assets/video/`) and every README /
+social / OKX reference already exist in the repo, wired to these exact paths.
+Machine-readable beat → source → asset provenance lives in
+`docs/amg/capture-map.json`. Save under these names and you're done:
 
 ```
 desktop/hammurabi-handoff/assets/screenshots/

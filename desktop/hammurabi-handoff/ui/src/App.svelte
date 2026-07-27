@@ -26,7 +26,7 @@
       seen.add(m.seq);
       feed = [...feed, m];
     };
-    await listen("ramesh://message", (e) => add(e.payload));
+    await listen("ramesh/message", (e) => add(e.payload));
     (await invoke("mesh_feed")).forEach(add);
   });
 

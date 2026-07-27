@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.0.0",
+  "product": "hammurabi-handoff",
+  "stage": "map",
+  "source_of_truth": "ui/dist/index.html + Rust narrative constants (not ui/src/App.svelte)",
+  "runtime": {
+    "launch": "cargo run -p hammurabi-handoff --features tauri-app",
+    "window_title": "Hammurabi Handoff — RAMesh #handoff-ops",
+    "window_size": { "width": 1100, "height": 760, "minWidth": 800, "minHeight": 520 },
+    "loopback": "127.0.0.1:3402",
+    "credential_ttl_secs": 60
+  },
+  "button_enablement": {
+    "notes": "Shipped dist enables settle only after 402; App.svelte enables settle after announce — do not record from an unbuilt Svelte rebuild.",
+    "fresh_launch": { "1": true, "2": false, "3": false, "4": false, "status": "idle" },
+    "after_announce": { "2": true, "status": "intent <id>" },
+    "after_request_execution": { "3": true, "status": "402 — payment required" },
+    "after_settle": { "4": true, "status": "receipt <id>" },
+    "after_execute": { "status": "settled — envelope <key> (TTL 60s)" },
+    "after_replay": { "status": "refused: 402" }
+  },
+  "narrative_strings": [
+    {
+      "const": "INTENT_ANNOUNCEMENT",
+      "file": "src/intent.rs",
+      "sender": "agent/scout-1",
+      "kind": "intent",
+      "color": "#9ece6a",
+      "text": "Opportunity found: ETH limit order at $3,100. Requesting execution."
+    },
+    {
+      "const": "X402_RESTRICTION_NOTICE",
+      "file": "src/x402.rs",
+      "sender": "gate/x402",
+      "kind": "restriction",
+      "color": "#f7768e",
+      "text": "Action restricted. x402 payment of 0.50 USDC required."
+    },
+    {
+      "const": "payment_settle_format",
+      "file": "src/server.rs",
+      "sender": "gate/x402",
+      "kind": "payment",
+      "color": "#e0af68",
+      "text_pattern": "x402 payment of 0.50 USDC settled for intent {intent_id} — receipt {receipt_id}."
+    },
+    {
+      "const": "CREDENTIAL_MINTED_NOTICE",
+      "file": "src/vault.rs",
+      "sender": "vault/handshake",
+      "kind": "credential",
+      "color": "#bb9af7",
+      "text": "Payment confirmed. Ephemeral Handshake credential minted."
+    },
+    {
+      "const": "settlement_format",
+      "file": "src/server.rs",
+      "sender": "relay/1shot",
+      "kind": "settlement",
+      "color": "#7dcfff",
+      "text_pattern": "Settlement envelope {idempotency_key} staged for gasless Stylus broadcast (credential expires at {expires_at})."
+    }
+  ],
+  "screenshots": [
+    {
+      "id": 1,
+      "file": "assets/screenshots/01-idle.png",
+      "action": "fresh launch, no clicks",
+      "visible": ["one grey system/handoff startup line (not an empty feed)", "header", "four buttons", "2–4 disabled", "status idle"]
+    },
+    {
+      "id": 2,
+      "file": "assets/screenshots/02-announce.png",
+      "action": "click 1 · Announce opportunity",
+      "visible": ["green intent line", "status intent …", "button 2 enabled"]
+    },
+    {
+      "id": 3,
+      "file": "assets/screenshots/03-restricted.png",
+      "action": "click 2 · Request execution",
+      "visible": ["red restriction line", "status 402 — payment required", "button 3 enabled"]
+    },
+    {
+      "id": 4,
+      "file": "assets/screenshots/04-minted.png",
+      "action": "click 3 · Settle x402 (0.50 USDC), then 4 · Execute with receipt",
+      "visible": ["amber payment", "purple mint", "cyan settlement", "status settled — envelope … (TTL 60s)"]
+    },
+    {
+      "id": 5,
+      "file": "assets/screenshots/05-replay-bounced.png",
+      "action": "click 4 · Execute with receipt again (same receipt)",
+      "visible": ["second red restriction line", "status refused: 402"],
+      "caption": "security proof — burned receipt bounce"
+    }
+  ],
+  "video": {
+    "script": "docs/DEMO_SCRIPT.md",
+    "prep": "docs/VIDEO_PREP.md",
+    "outputs": {
+      "demo": "assets/video/demo.mp4",
+      "thumbnail": "assets/video/thumbnail.png"
+    },
+    "title_card_assets": ["assets/banner.png", "assets/logo.svg"],
+    "beats": [
+      { "t": "0:00-0:05", "beat": "title", "do": "banner.png full-frame" },
+      { "t": "0:05-0:20", "beat": "problem", "do": "VO only" },
+      { "t": "0:20-0:40", "beat": "feed", "do": "click 1" },
+      { "t": "0:40-0:50", "beat": "gate", "do": "click 2" },
+      { "t": "0:50-1:05", "beat": "mint", "do": "click 3 then 4" },
+      { "t": "1:05-1:20", "beat": "kill_test", "do": "click 4 again" },
+      { "t": "1:20-1:25", "beat": "close", "do": "logo/banner + repo link" }
+    ]
+  },
+  "consumers": [
+    "README.md#Screenshots",
+    "README.md#Demo video",
+    "docs/SOCIAL_POSTS.md",
+    "docs/OKX_LISTING_COPY.md",
+    "docs/SUBMISSION_LEDGER.md"
+  ],
+  "human_only": [
+    "screenshot capture",
+    "demo video recording",
+    "OKX portal upload limits check"
+  ],
+  "confidence_score": 0.94,
+  "clarifying_questions": []
+}

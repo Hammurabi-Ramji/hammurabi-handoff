@@ -99,11 +99,23 @@
     feedEl.scrollTop = feedEl.scrollHeight;
   }
 
+  async function refreshFeed() {
+    try {
+      (await invoke("mesh_feed")).forEach(renderLine);
+    } catch (e) {
+      console.error("mesh_feed failed", e);
+    }
+  }
+
   async function boot() {
     // Subscribe BEFORE snapshotting so nothing posted in between is lost;
-    // the seq dedupe absorbs the overlap.
-    await listen("ramesh://message", (e) => renderLine(e.payload));
-    (await invoke("mesh_feed")).forEach(renderLine);
+    // the seq dedupe absorbs the overlap. If listen fails, still snapshot.
+    try {
+      await listen("ramesh/message", (e) => renderLine(e.payload));
+    } catch (e) {
+      console.error("ramesh/message listen failed", e);
+    }
+    await refreshFeed();
   }
 
   btn("announce").onclick = async () => {
@@ -111,6 +123,7 @@
     intent = r.body;
     statusEl.textContent = "intent " + intent.intent_id;
     btn("execute").disabled = false;
+    await refreshFeed();
   };
 
   btn("execute").onclick = async () => {
@@ -121,6 +134,7 @@
     } else {
       statusEl.textContent = "unexpected " + r.status;
     }
+    await refreshFeed();
   };
 
   btn("settle").onclick = async () => {
@@ -128,6 +142,7 @@
     receiptId = r.body.receipt_id;
     statusEl.textContent = "receipt " + receiptId;
     btn("retry").disabled = false;
+    await refreshFeed();
   };
 
   btn("retry").onclick = async () => {
@@ -138,6 +153,7 @@
     } else {
       statusEl.textContent = "refused: " + r.status;
     }
+    await refreshFeed();
   };
 
   boot();

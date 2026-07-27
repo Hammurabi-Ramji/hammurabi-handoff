@@ -2,7 +2,7 @@
 //!
 //! Composition root: builds one [`HandoffState`], one router over it, and
 //! hands both to the IPC layer. Live mesh messages are forwarded to the
-//! frontend as `ramesh://message` events so the feed updates without
+//! frontend as `ramesh/message` events so the feed updates without
 //! polling. The same router is also served on loopback HTTP for headless
 //! local agents — same state, same gate, same feed.
 
@@ -45,7 +45,10 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
                 loop {
                     match live.recv().await {
                         Ok(message) => {
-                            let _ = handle.emit("ramesh://message", &message);
+                            // Event names must be alphanumeric / - _ : / only.
+                            // Prefer a single-slash form — some WebView listeners
+                            // treat `://` like a URI and drop the subscription.
+                            let _ = handle.emit("ramesh/message", &message);
                         }
                         Err(RecvError::Lagged(skipped)) => {
                             tracing::warn!("mesh forwarder lagged; skipped {skipped} messages");
