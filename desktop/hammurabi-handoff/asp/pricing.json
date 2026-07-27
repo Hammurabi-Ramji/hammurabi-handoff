@@ -12,5 +12,5 @@
     "audit_feed": { "amount_micro": 0, "display": "free" },
     "credential_verification": { "amount_micro": 0, "display": "free (pure function; envelope is self-contained)" }
   },
-  "settlement_resolution": "POST /x402/settle {\"intent_id\": ...} — local mock; live facilitator lands as opt-in feature (roadmap G-4)"
+  "settlement_resolution": "POST /x402/settle {\"intent_id\": ...} — mocked locally by default; a live x402 facilitator is wired as an opt-in feature (build with --features x402-live + HANDOFF_X402_* env vars — see README.md G-4)"
 }

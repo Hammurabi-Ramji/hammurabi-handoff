@@ -64,7 +64,7 @@
     "clock_discipline": "caller-supplied time on all cryptographic paths"
   },
   "display": {
-    "logo": "icons/icon.ico",
+    "logo": "assets/logo.png",
     "primary_color": "#0b0e14",
     "accent_color": "#c9a96e"
   }

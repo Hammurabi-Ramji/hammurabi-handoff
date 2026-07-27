@@ -19,7 +19,7 @@
     {
       "id": "payment_settlement",
       "endpoint": "POST /x402/settle",
-      "description": "Settle the 0.50 USDC execution fee for an intent (LOCAL MOCK in this build)",
+      "description": "Settle the 0.50 USDC execution fee for an intent (mocked locally by default; a live x402 facilitator is wired as an opt-in feature — see README.md G-4)",
       "input_schema": { "intent_id": "string" },
       "output_schema": { "receipt": "PaymentReceipt (single-use, intent-bound)" }
     },
