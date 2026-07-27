@@ -71,9 +71,20 @@ every correction is logged here.
 
 - [ ] OKX.AI ASP account + gallery form + Google form
 - [ ] X account; schedule the four posts from `SOCIAL_POSTS.md`
-- [ ] Demo video recording + thumbnail — script ready (`DEMO_SCRIPT.md`),
-      full shot-by-shot capture guide in `docs/VIDEO_PREP.md`; beat → source →
-      asset provenance in `docs/amg/capture-map.json`
+- [x] **Demo video + thumbnail (2026-07-27):** `assets/video/demo.mp4` —
+      90.0s, 1116×800, h264, narrated (AAC mono, real speech confirmed via
+      `ffmpeg -af volumedetect`: mean −20.7dB / peak −0.5dB, not silence or
+      clipping). Video track verified byte-identical, frame-for-frame at six
+      sampled timestamps, to an earlier silent take of the same recording —
+      confirms the narrated cut is dubbed audio over the same clean capture,
+      not a re-shoot with new visual risk. Content spot-checked at those six
+      timestamps: correct narrative strings, correct button-enable states,
+      full six-line sequence visible by the close. **Not independently
+      verified: the spoken narration's exact wording** — no transcription
+      tooling was available in-session to check it against `DEMO_SCRIPT.md`'s
+      quoted (**"do not reword"**) lines; give it one human listen before
+      calling this final. `assets/video/thumbnail.png` is `banner.png` at the
+      correct 1200×630 — kept from the earlier pass, still valid.
 - [x] PNG exports: `assets/logo.png` (512×512, transparent) + `assets/banner.png`
       (1200×630, `#0b0e14`). **Banner spec (ratified 2026-07-08):** purpose-built
       hero (not an architecture crop), two-line tagline **"Hammurabi Handoff" /
@@ -81,11 +92,14 @@ every correction is logged here.
       good exists."* This two-line form supersedes the earlier single-line
       literal ("… : Zero-Telemetry. 1Shot Settlement.") — ratified as
       semantically identical and more legible. Source: `assets/banner.svg`.
-- [ ] Live screenshots of the running shell (3–5, per checklist) — capture
-      guide with exact clicks and expected on-screen text in
-      `docs/VIDEO_PREP.md` Part A; target folder
-      `assets/screenshots/` (created, empty, awaiting the 5 files); map in
-      `docs/amg/capture-map.json`
+- [x] **Live screenshots of the running shell (2026-07-26):** all 5 landed
+      in `assets/screenshots/`, captured by driving the real Tauri window
+      via Chrome DevTools Protocol rather than an OS-level screen grab —
+      see the commit history for why that distinction mattered (the first
+      capture attempt had real problems: OS overlay contamination and a
+      genuine app-level event-name bug that was silently swallowing the live
+      feed). Feed-line counts verified against the known-correct backend
+      sequence at every step before capturing.
 - [ ] Live ASP deployment (requires G-5/G-6 — the 1Shot broadcast adapter
       and OKX manifest submission; G-4's facilitator seam is landed but
       still needs a real facilitator wired in and testnet-verified)
