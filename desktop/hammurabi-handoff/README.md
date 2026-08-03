@@ -175,6 +175,15 @@ on testnet USDC before pointing this at real money.
 **G-5 (live 1Shot broadcast)** remains fully roadmap — `settlement.rs`'s
 `local://` endpoint is unchanged.
 
+**Enterprise-grade / production-ready track** — this build is a working,
+tested, single-machine prototype, not production or multi-tenant software.
+[`docs/ENTERPRISE_READINESS_SPEC.md`](docs/ENTERPRISE_READINESS_SPEC.md)
+maps every gap (durability, auth, live settlement verification,
+observability, API versioning, horizontal scaling, ops readiness, security/
+compliance) against the shipped code and lays out a phased plan (E-1…E-8)
+to close them without regressing the sovereignty/legibility properties
+that are the actual product.
+
 ## License
 
 MIT

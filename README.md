@@ -49,6 +49,7 @@ monorepo.
 - **Screenshots + demo video** → in the full README's Screenshots / Demo video sections
 - **The ASP manifest OKX actually reads** → [`asp/manifest.json`](desktop/hammurabi-handoff/asp/manifest.json)
 - **What's real vs. staged/mocked, and why** → [`docs/SUBMISSION_LEDGER.md`](desktop/hammurabi-handoff/docs/SUBMISSION_LEDGER.md) — every claim in this submission is checked against the shipped code there, not just asserted
+- **What it would take to run this as enterprise-grade, production software** → [`docs/ENTERPRISE_READINESS_SPEC.md`](desktop/hammurabi-handoff/docs/ENTERPRISE_READINESS_SPEC.md) — gap analysis, target architecture, and a phased roadmap, checked against the shipped code the same way
 
 ## License
 
