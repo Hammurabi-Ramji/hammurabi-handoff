@@ -27,8 +27,8 @@ cargo run -p hammurabi-handoff --features tauri-app
 ```
 
 No npm step — the desktop shell ships a hand-written static UI bundle
-in-repo. Tests: `cargo test --workspace` → 27 handoff · 38 crypto · 7 oka
-(72 total, all green, CI-gated on every push).
+in-repo. Tests: `cargo test --workspace` → 29 handoff · 38 crypto · 7 oka
+(74 total, all green, CI-gated on every push).
 
 ## Repository layout
 

@@ -13,18 +13,24 @@ doc is checked against it instead of silently drifting.
 If a number below ever needs to change, change it here first, then grep the
 rest of the docs for the old value.
 
+The Credential TTL and Execution fee rows are enforced, not just asserted:
+`tests/project_facts_ssot.rs` reads this file and fails the build if its
+wording no longer matches `vault::CREDENTIAL_TTL_SECS` /
+`x402::EXECUTION_FEE_MICRO_USDC` — the two constants stay the real source of
+truth, and this doc is checked against them rather than trusted on its own.
+
 ## Core numbers
 
 | Fact | Value | Authority |
 |---|---|---|
-| Credential TTL | **60 seconds**, strict, structural + verify-time | `vault::CREDENTIAL_TTL_SECS` |
-| Execution fee | **0.50 USDC** (500,000 micro-USDC), x402 `exact` scheme | `asp/pricing.json` |
+| Credential TTL | **60 seconds**, strict, structural + verify-time | `vault::CREDENTIAL_TTL_SECS` (test-enforced) |
+| Execution fee | **0.50 USDC** (500,000 micro-USDC), x402 `exact` scheme | `x402::EXECUTION_FEE_MICRO_USDC` (test-enforced) |
 | Demo narrative price | **$3,100** (ETH limit-order line — do not reword) | `DEMO_SCRIPT.md` |
 | Payload hash | **BLAKE3** over **RFC 8785 canonical** JSON | `iedb-crypto::jcs` |
 | Signing scheme | Ephemeral **Ed25519** per mint, seed zeroized on return | `vault.rs` |
 | Replay prevention | Single-use burned x402 receipt + timestamp-bound signature + idempotency-keyed settlement (no explicit nonce field) | `x402.rs`, `settlement.rs` |
 | Binary | One binary (`hammurabi-handoff`), headless surface on `127.0.0.1:3402` | `src/server.rs` |
-| Test counts (default features) | 27 handoff · 38 crypto · 7 oka | `cargo test --workspace` |
+| Test counts (default features) | 29 handoff · 38 crypto · 7 oka | `cargo test --workspace` |
 
 ## Roadmap gate legend
 
@@ -108,7 +114,7 @@ source_files:
 extracted_entities:
   - {type: fact, id: FACT-001, topic: credential_ttl, value: 60_seconds, confidence: high}
   - {type: fact, id: FACT-002, topic: execution_fee, value: 0.50_usdc, confidence: high}
-  - {type: fact, id: FACT-003, topic: test_counts, value: "27_handoff_38_crypto_7_oka", confidence: high}
+  - {type: fact, id: FACT-003, topic: test_counts, value: "29_handoff_38_crypto_7_oka", confidence: high}
   - {type: roadmap_gate, id: GATE-001, gate: G-1, status: roadmap, topic: stylus_onchain_deploy}
   - {type: roadmap_gate, id: GATE-002, gate: G-2, status: roadmap, topic: wasm_vault}
   - {type: roadmap_gate, id: GATE-003, gate: G-3, status: roadmap, topic: svelte_scaffold}

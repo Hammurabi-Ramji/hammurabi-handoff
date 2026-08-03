@@ -66,6 +66,17 @@ every correction is logged here.
       startup — previously it was a no-op even fully configured. Covered by
       `settlement_backend::env_wiring_tests` (only compiled/run under
       `--features x402-live`, so it doesn't touch the default CI gate).
+- [x] **PROJECT_FACTS.md + SSOT enforcement (2026-08-03):** added
+      `docs/PROJECT_FACTS.md` consolidating the numbers/roadmap labels
+      restated across all 9 submission docs, and
+      `tests/project_facts_ssot.rs`, which reads that file and fails the
+      build if its Credential TTL / Execution fee rows stop matching
+      `vault::CREDENTIAL_TTL_SECS` / `x402::EXECUTION_FEE_MICRO_USDC` — the
+      doc is checked against the code, not just trusted. This raised the
+      handoff test count from 27 to 29 (30 under `--features x402-live`);
+      every "27 handoff" reference across README/SUBMISSION_LEDGER/
+      OKX_LISTING_COPY/TRACK_ALIGNMENT was updated to match, so this change
+      doesn't itself introduce the exact drift it exists to prevent.
 
 ## Still owed (human / external — cannot be produced in-repo)
 
@@ -130,9 +141,9 @@ the default one:
 
 | Build | Tests | fmt | clippy -D warnings |
 |---|---|---|---|
-| default | 27 handoff / 38 crypto / 7 oka | clean | clean |
+| default | 29 handoff / 38 crypto / 7 oka | clean | clean |
 | `--features tauri-app` | (check only, no test target) | — | clean |
-| `--features x402-live` | 27 handoff (incl. `env_wiring_tests`) | clean | clean |
+| `--features x402-live` | 30 handoff (incl. `env_wiring_tests`) | clean | clean |
 | `--features tauri-app,x402-live` | check only | — | (not re-run; default+each singly covers the surface) |
 
 ## Review-finding deferrals (adversarial review, 2026-07-07)

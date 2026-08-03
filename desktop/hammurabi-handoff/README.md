@@ -82,7 +82,7 @@ enter as opt-in features. Cryptographic paths take caller-supplied time.
 
 ```bash
 # From the IEDB workspace root
-cargo test -p hammurabi-handoff        # 27 tests: full pipeline, TTL, replay, chaos, OKX edge, eviction
+cargo test -p hammurabi-handoff        # 29 tests: full pipeline, TTL, replay, chaos, OKX edge, eviction, PROJECT_FACTS.md SSOT
 cargo build -p hammurabi-handoff --release
 
 # Desktop shell (static ui/dist ships in-repo — no npm step)
@@ -147,7 +147,7 @@ bounce. Script: [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).*
 
 `.github/workflows/handoff-ci.yml` (badge above, live on `main`) gates this
 crate + `iedb-oka` on four checks: `cargo fmt --check`, `cargo clippy -- -D
-warnings`, `cargo build`, `cargo test` (27/27 handoff, 7/7 oka, 38/38
+warnings`, `cargo build`, `cargo test` (29/29 handoff, 7/7 oka, 38/38
 iedb-crypto). It is **scoped to the submission crates on purpose** — the
 wider IEDB workspace has legacy crates that don't pass `-D warnings`, so a
 workspace-wide gate would be red and misleading.
