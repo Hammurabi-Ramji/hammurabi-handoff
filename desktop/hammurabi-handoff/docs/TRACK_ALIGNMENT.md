@@ -29,7 +29,7 @@ settlement accounting* are live today.
 ## Best Product ($20,000)
 **Why we qualify:**
 - Working pipeline end-to-end today: announce → 402 → settle → mint →
-  envelope, 27 automated tests including the full E2E transcript
+  envelope, 29 automated tests including the full E2E transcript
 - Documented: README, ARCHITECTURE, demo script, ASP manifest
 - One-command run: `cargo run -p hammurabi-handoff --features tauri-app`
   (static UI ships in-repo — no npm step)

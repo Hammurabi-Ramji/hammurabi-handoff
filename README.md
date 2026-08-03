@@ -26,9 +26,10 @@ full roadmap. This file is a map, not a duplicate.
 cargo run -p hammurabi-handoff --features tauri-app
 ```
 
-No npm step — the desktop shell ships a hand-written static UI bundle
-in-repo. Tests: `cargo test --workspace` → 27 handoff · 38 crypto · 7 oka
-(72 total, all green, CI-gated on every push).
+No npm step to run it — the desktop shell is a Svelte 5 app whose built
+static bundle ships in-repo (`ui/dist`); npm is only needed to regenerate it
+after editing `ui/src`. Tests: `cargo test --workspace` → 29 handoff · 38
+crypto · 7 oka (74 total, all green, CI-gated on every push).
 
 ## Repository layout
 
@@ -49,6 +50,7 @@ monorepo.
 - **Screenshots + demo video** → in the full README's Screenshots / Demo video sections
 - **The ASP manifest OKX actually reads** → [`asp/manifest.json`](desktop/hammurabi-handoff/asp/manifest.json)
 - **What's real vs. staged/mocked, and why** → [`docs/SUBMISSION_LEDGER.md`](desktop/hammurabi-handoff/docs/SUBMISSION_LEDGER.md) — every claim in this submission is checked against the shipped code there, not just asserted
+- **Single source of truth for recurring numbers** (TTL, fee, test counts, roadmap gate legend) → [`docs/PROJECT_FACTS.md`](desktop/hammurabi-handoff/docs/PROJECT_FACTS.md)
 
 ## License
 

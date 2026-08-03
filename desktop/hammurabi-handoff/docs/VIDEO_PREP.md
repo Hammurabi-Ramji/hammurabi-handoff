@@ -31,10 +31,9 @@ recording, the four buttons wrap awkwardly).
 `assets/screenshots/0N-<name>.png` — that folder already exists (`.gitkeep`
 only; drop the five PNGs in).
 
-Record against the **shipped** shell (`ui/dist/index.html`). Do not rebuild
-from `ui/src/App.svelte` for this take — the Svelte source enables button 3
-after announce; the shipped dist enables it only after the 402 (matches this
-table and `DEMO_SCRIPT.md`).
+Record against the **shipped** shell (`ui/dist`, built from
+`ui/src/App.svelte` — G-3 landed, no rebuild needed for this take). Button 3
+enables only after the 402, matching this table and `DEMO_SCRIPT.md`.
 
 | # | Filename | Action before capturing | What must be visible on screen |
 |---|----------|--------------------------|----------------------------------|

@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "product": "hammurabi-handoff",
   "stage": "map",
-  "source_of_truth": "ui/dist/index.html + Rust narrative constants (not ui/src/App.svelte)",
+  "source_of_truth": "ui/src/App.svelte (built to ui/dist via Vite) + Rust narrative constants",
   "runtime": {
     "launch": "cargo run -p hammurabi-handoff --features tauri-app",
     "window_title": "Hammurabi Handoff — RAMesh #handoff-ops",
@@ -11,7 +11,7 @@
     "credential_ttl_secs": 60
   },
   "button_enablement": {
-    "notes": "Shipped dist enables settle only after 402; App.svelte enables settle after announce — do not record from an unbuilt Svelte rebuild.",
+    "notes": "Settle (button 3) enables only after the 402 restriction, not right after announce.",
     "fresh_launch": { "1": true, "2": false, "3": false, "4": false, "status": "idle" },
     "after_announce": { "2": true, "status": "intent <id>" },
     "after_request_execution": { "3": true, "status": "402 — payment required" },

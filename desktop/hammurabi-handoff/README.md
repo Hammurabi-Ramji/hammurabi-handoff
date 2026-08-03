@@ -58,6 +58,7 @@ Each credential is:
 | Layer | Component | Where |
 |-------|-----------|-------|
 | Substrate | Tauri 2 (local-first, loopback only) | `src/app.rs`, `src/commands.rs` |
+| Frontend | Svelte 5 + Vite, built output committed | `ui/src/App.svelte` → `ui/dist` |
 | Mesh | RAMesh IRC-style feed | `src/mesh.rs` |
 | Intent | Structured agent payloads | `src/intent.rs` |
 | Monetization | x402 middleware (Axum) | `src/x402.rs` |
@@ -82,10 +83,10 @@ enter as opt-in features. Cryptographic paths take caller-supplied time.
 
 ```bash
 # From the IEDB workspace root
-cargo test -p hammurabi-handoff        # 27 tests: full pipeline, TTL, replay, chaos, OKX edge, eviction
+cargo test -p hammurabi-handoff        # 29 tests: full pipeline, TTL, replay, chaos, OKX edge, eviction, PROJECT_FACTS.md SSOT
 cargo build -p hammurabi-handoff --release
 
-# Desktop shell (static ui/dist ships in-repo — no npm step)
+# Desktop shell (Svelte 5 build, ui/dist ships pre-built in-repo — no npm step to run)
 cargo run -p hammurabi-handoff --features tauri-app
 ```
 
@@ -147,16 +148,17 @@ bounce. Script: [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).*
 
 `.github/workflows/handoff-ci.yml` (badge above, live on `main`) gates this
 crate + `iedb-oka` on four checks: `cargo fmt --check`, `cargo clippy -- -D
-warnings`, `cargo build`, `cargo test` (27/27 handoff, 7/7 oka, 38/38
+warnings`, `cargo build`, `cargo test` (29/29 handoff, 7/7 oka, 38/38
 iedb-crypto). It is **scoped to the submission crates on purpose** — the
 wider IEDB workspace has legacy crates that don't pass `-D warnings`, so a
 workspace-wide gate would be red and misleading.
 
 ## Roadmap
 
-See `C:\IEDB\docs\specs\sovereign-stack-phase0-alignment.md` §3: Stylus
-verifier contract (G-1), WASM vault surface via `wasm/iedb-wasm` (G-2),
-Svelte 5 scaffold (G-3), OKX.AI ASP manifest submission (G-6).
+Full gate legend in [`docs/PROJECT_FACTS.md`](docs/PROJECT_FACTS.md#roadmap-gate-legend):
+Stylus verifier on-chain deployment (G-1), WASM vault surface via
+`wasm/iedb-wasm` (G-2), Svelte 5 scaffold (G-3), OKX.AI ASP manifest
+submission (G-6).
 
 **G-4 (live x402 facilitator) — wired, opt-in, off by default:**
 `settlement_backend.rs` adds a `SettlementBackend` behind the `x402-live`

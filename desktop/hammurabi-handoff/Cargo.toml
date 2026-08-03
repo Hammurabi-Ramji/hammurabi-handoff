@@ -11,7 +11,8 @@ default = []
 # Tauri desktop shell. OFF by default so the ASP core (mesh, x402 gate, JIT
 # vault, settlement formatter) compiles and tests in isolation during the
 # parallel workspace build — same posture as `ramgenie-ide`. The shell ships
-# a hand-written static `ui/dist` (no npm build step required), so unlike
+# a pre-built static `ui/dist` (Svelte 5 + Vite output, committed; source in
+# `ui/src`) — no npm build step is required to compile this crate, so unlike
 # ramgenie-ide this feature is compilable as-is.
 tauri-app = [
     "dep:tauri",
