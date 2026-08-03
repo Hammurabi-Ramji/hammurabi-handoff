@@ -114,15 +114,21 @@ surface and a dependency for zero legibility gain on a single machine. The
 **Why Tauri?** Local-first sovereignty. No cloud dependency; the operator
 owns the mesh, the vault, and the feed.
 
-**Zero-JS / Zero-Node.js (clarification).** The backend and the desktop shell
-contain no JavaScript dependencies and no Node.js runtime — the vault, gate,
-mesh, OKX bridge, and settlement are pure Rust. The frontend is a hand-written
-static bundle under `ui/dist` embedded at compile time by
-`tauri::generate_context!`; there is no npm install, no bundler, and no Node
-process at build, run, or deploy time. (`ui/src/App.svelte` is provided as the
-source for a future Svelte 5 scaffold, but nothing in the shipped path executes
-it or requires a toolchain.) This satisfies the spirit of the constraint: a
-fully self-contained, local-first application with no JS runtime.
+**Zero-Node.js at Rust build/run/deploy time (clarification, updated for G-3).**
+The backend — vault, gate, mesh, OKX bridge, settlement — is pure Rust with no
+JavaScript dependencies. The frontend, as of G-3, is a real Svelte 5 app
+(`ui/src/App.svelte`, built via Vite in `ui/`); its *build output* is what's
+static: `ui/dist` is committed to the repo and embedded at compile time by
+`tauri::generate_context!`. `cargo build` / `cargo run` / `cargo check
+--features tauri-app` never invoke npm, install a bundler, or spawn a Node
+process — they embed whatever is already sitting in `ui/dist`. npm only
+enters the picture when someone edits `ui/src` and needs to regenerate that
+committed output (`cd ui && npm install && npm run build`). This satisfies
+the spirit of the constraint for the shipped Rust artifact: no Node.js
+runtime or toolchain is required to build, run, or deploy the app — the
+frontend's *source* is no longer hand-written, but its *build product* is
+still a self-contained static bundle checked into version control the same
+way the previous hand-written HTML was.
 
 **Why JIT credentials?** Zero standing permissions. The blast radius of a
 compromise is exactly one action for at most 60 seconds — and the secret key

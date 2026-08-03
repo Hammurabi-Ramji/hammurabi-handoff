@@ -42,7 +42,7 @@ SUBMISSION_LEDGER.md, and the `asp/*.json` manifests:
 |---|---|---|
 | G-1 | Stylus on-chain deployment of `verify_handoff` | Roadmap. Reference verifier is implemented and tested (`settlement::verify_handoff`); not deployed on-chain. |
 | G-2 | WASM vault surface (`wasm/iedb-wasm`) | Roadmap, not started. |
-| G-3 | Svelte 5 scaffold for the frontend | Roadmap; `ui/src/App.svelte` exists as source only, not built or shipped. |
+| G-3 | Svelte 5 scaffold for the frontend | **Landed.** `ui/` is a real Vite + Svelte 5 project; `npm run build` produces the committed `ui/dist` that `tauri.conf.json` embeds. `cargo build`/`run`/`check` still need zero npm steps — only editing `ui/src` does. |
 | G-4 | Live x402 facilitator | Landed, opt-in, **off by default** (`--features x402-live` + `HANDOFF_X402_*` env vars). Wire format not yet verified against a real facilitator or testnet. |
 | G-5 | Live 1Shot broadcast (real gasless relay) | Roadmap. `settlement.rs`'s `local://` endpoint is unchanged. |
 | G-6 | OKX.AI ASP manifest submission | Roadmap — human/external step, not producible in-repo. |
@@ -117,7 +117,7 @@ extracted_entities:
   - {type: fact, id: FACT-003, topic: test_counts, value: "29_handoff_38_crypto_7_oka", confidence: high}
   - {type: roadmap_gate, id: GATE-001, gate: G-1, status: roadmap, topic: stylus_onchain_deploy}
   - {type: roadmap_gate, id: GATE-002, gate: G-2, status: roadmap, topic: wasm_vault}
-  - {type: roadmap_gate, id: GATE-003, gate: G-3, status: roadmap, topic: svelte_scaffold}
+  - {type: roadmap_gate, id: GATE-003, gate: G-3, status: landed, topic: svelte_scaffold}
   - {type: roadmap_gate, id: GATE-004, gate: G-4, status: landed_opt_in_off_by_default, topic: live_x402_facilitator}
   - {type: roadmap_gate, id: GATE-005, gate: G-5, status: roadmap, topic: live_1shot_broadcast}
   - {type: roadmap_gate, id: GATE-006, gate: G-6, status: roadmap_external, topic: okx_manifest_submission}

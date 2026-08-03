@@ -77,6 +77,34 @@ every correction is logged here.
       every "27 handoff" reference across README/SUBMISSION_LEDGER/
       OKX_LISTING_COPY/TRACK_ALIGNMENT was updated to match, so this change
       doesn't itself introduce the exact drift it exists to prevent.
+- [x] **G-3 landed (2026-08-03): real Svelte 5 frontend.** `ui/` is now a
+      Vite + Svelte 5 project (`package.json`, `vite.config.js`,
+      `ui/src/main.js`); `ui/src/App.svelte` — previously unused reference
+      source — is the real frontend, built by `npm run build` into the
+      committed `ui/dist` that `tauri.conf.json`'s `frontendDist` embeds.
+      `cargo build`/`run`/`check --features tauri-app` still take zero npm
+      steps; npm is only needed to regenerate `ui/dist` after editing
+      `ui/src`. Fixed in the same pass: `App.svelte` previously enabled
+      button 3 (Settle) right after Announce instead of after the 402
+      restriction — a known divergence from the shipped hand-written dist
+      that `VIDEO_PREP.md`/`docs/amg/capture-map.json` explicitly warned
+      recorders to avoid. Now that `App.svelte` *is* what's shipped, that
+      divergence is fixed at the source and the warning is removed.
+      Restyled to full visual parity with the previous hand-written
+      `ui/dist/index.html` (same CSS variables, colors per message kind,
+      header/footer chrome, button states) rather than shipping Svelte's
+      unstyled default. **Not verified in this session:** `cargo check -p
+      hammurabi-handoff --features tauri-app` — this sandbox lacks the
+      system GTK/GDK dev packages Tauri's Linux build needs
+      (`gdk-3.0.pc` not found via pkg-config), which predates this change
+      (confirmed by stashing it and reproducing the same failure on the
+      prior commit) and is exactly what `handoff-ci.yml`'s GitHub Actions
+      runner provides. What *was* verified here: `npm run build` succeeds
+      and emits a valid `index.html` + hashed JS/CSS bundle, and the
+      default-feature test suite (29 handoff / 38 crypto / 7 oka) stays
+      green since `tauri-app` is off by default and untouched by this
+      change otherwise. Confirm the CI badge on this PR before treating the
+      Tauri build itself as re-verified.
 
 ## Still owed (human / external — cannot be produced in-repo)
 

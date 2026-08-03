@@ -58,6 +58,7 @@ Each credential is:
 | Layer | Component | Where |
 |-------|-----------|-------|
 | Substrate | Tauri 2 (local-first, loopback only) | `src/app.rs`, `src/commands.rs` |
+| Frontend | Svelte 5 + Vite, built output committed | `ui/src/App.svelte` → `ui/dist` |
 | Mesh | RAMesh IRC-style feed | `src/mesh.rs` |
 | Intent | Structured agent payloads | `src/intent.rs` |
 | Monetization | x402 middleware (Axum) | `src/x402.rs` |
@@ -85,7 +86,7 @@ enter as opt-in features. Cryptographic paths take caller-supplied time.
 cargo test -p hammurabi-handoff        # 29 tests: full pipeline, TTL, replay, chaos, OKX edge, eviction, PROJECT_FACTS.md SSOT
 cargo build -p hammurabi-handoff --release
 
-# Desktop shell (static ui/dist ships in-repo — no npm step)
+# Desktop shell (Svelte 5 build, ui/dist ships pre-built in-repo — no npm step to run)
 cargo run -p hammurabi-handoff --features tauri-app
 ```
 
