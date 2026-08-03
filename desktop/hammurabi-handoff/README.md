@@ -154,9 +154,10 @@ workspace-wide gate would be red and misleading.
 
 ## Roadmap
 
-See `C:\IEDB\docs\specs\sovereign-stack-phase0-alignment.md` §3: Stylus
-verifier contract (G-1), WASM vault surface via `wasm/iedb-wasm` (G-2),
-Svelte 5 scaffold (G-3), OKX.AI ASP manifest submission (G-6).
+Full gate legend in [`docs/PROJECT_FACTS.md`](docs/PROJECT_FACTS.md#roadmap-gate-legend):
+Stylus verifier on-chain deployment (G-1), WASM vault surface via
+`wasm/iedb-wasm` (G-2), Svelte 5 scaffold (G-3), OKX.AI ASP manifest
+submission (G-6).
 
 **G-4 (live x402 facilitator) — wired, opt-in, off by default:**
 `settlement_backend.rs` adds a `SettlementBackend` behind the `x402-live`
